@@ -1680,6 +1680,7 @@ variableList = [
     ),
     cms.PSet(
       variable    = cms.string("Jet_DeepCSVBDisc"),
+
       store       = cms.bool(False),
       mconly      = cms.bool(False),
       description = cms.string("Jet_DeepCSVBDisc"),
@@ -3347,6 +3348,22 @@ variableList = [
       store       = cms.bool(False),
       mconly      = cms.bool(False),
       description = cms.string("Track_idxMatchedTP"),
+      requires    = cms.vstring("nTrack"),
+      runOptions  = cms.vstring(),
+    ),
+    cms.PSet(
+      variable    = cms.string("Track_algo"),
+      store       = cms.bool(False),
+      mconly      = cms.bool(False),
+      description = cms.string("Track_algo"),
+      requires    = cms.vstring("nTrack"),
+      runOptions  = cms.vstring(),
+    ),
+    cms.PSet(
+      variable    = cms.string("Track_originalAlgo"),
+      store       = cms.bool(False),
+      mconly      = cms.bool(False),
+      description = cms.string("Track_originalAlgo"),
       requires    = cms.vstring("nTrack"),
       runOptions  = cms.vstring(),
     ),
@@ -6158,6 +6175,9 @@ variableList = [
       requires    = cms.vstring("nJet"),
       runOptions  = cms.vstring("runDeepBoostedJetTagVariables"),
     ),
+
+
+
   ]
 
 variableSet = cms.PSet(

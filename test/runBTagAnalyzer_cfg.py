@@ -669,7 +669,8 @@ bTagInfosFat += ([] if options.useLegacyTaggers else ['pfBoostedDoubleSV' + ('CA
 ## Add DeepDoubleX tag infos
 bTagInfosFat += ([] if options.useLegacyTaggers else ['pfDeepDoubleXTagInfos'])
 
-bTagDiscriminators_no_deepFlavour = {i for i in bTagDiscriminators if 'DeepFlavourJetTags' not in i}
+bTagDiscriminators_no_deepFlavour = {i for i in bTagDiscriminators if 'DeepFlavour' not in i}
+
 bTagDiscriminatorsFat = copy.deepcopy(bTagDiscriminators_no_deepFlavour)
 ## Add DeepDoubleX tag infos
 bTagInfosFat += ([] if options.useLegacyTaggers else ['pfDeepDoubleXTagInfos'])
