@@ -38,3 +38,10 @@ cd RecoBTag/PerformanceMeasurements/test/
 The content of the output ntuple is by default empty and has to be configured according to your needs. The ```store*Variables``` options have been removed.
 The new variable configuration can be customized in the file ```RecoBTag/PerformanceMeasurements/python/varGroups_cfi.py```.
 New variables need also to be added (apart from adding them in the code) in ```RecoBTag/PerformanceMeasurements/python/variables_cfi.py```
+
+
+For running on the HLT one needs to use RAW and there are very few options availbe here is the command I have working:
+
+```
+cmsRun ./runHLTBTagAnalyzer_cfg.py runOnData=True groups="HLTEventInfo,HLTJetInfo,HLTTagVar,HLTJetTrack,HLTJetSV,HLTCSVTagVar"
+```
