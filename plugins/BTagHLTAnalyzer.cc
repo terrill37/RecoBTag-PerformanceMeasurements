@@ -1,3 +1,4 @@
+
 // -*- C++ -*-
 //
 // Package:    BTagHLTAnalyzerT
@@ -69,6 +70,8 @@
 #include "TGraphErrors.h"
 
 #include "DataFormats/BTauReco/interface/SecondaryVertexTagInfo.h"
+#include "DataFormats/BTauReco/interface/ParticleMasses.h"
+
 
 //#include "SimDataFormats/Associations/interface/TrackToTrackingParticleAssociator.h"
 //#include "SimTracker/TrackHistory/interface/TrackCategories.h"
@@ -399,9 +402,6 @@ void BTagHLTAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Ev
   EventInfo.Evt  = iEvent.id().event();
   EventInfo.LumiBlock  = iEvent.luminosityBlock();
 
-
-
-
   //------------------
   // Primary vertex
   //------------------
@@ -476,14 +476,11 @@ void BTagHLTAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Ev
   if(havePassingCaloJet){
     processHLTJets<CaloJetCollection, reco::SecondaryVertexTagInfo>(caloJetsColl, CaloJetTagCollectionTag_, CaloSVCollectionTag_, CaloJetCSVTag_, CaloJetDeepCSVTag_, iEvent, iSetup, iJetColl);
   }
-    //    calobtag_source, calobtag_label                     = Handle("edm::AssociationVector<edm::RefToBaseProd<reco::Jet>,vector<float>>"), ("hltCombinedSecondaryVertexBJetTagsCalo")
-    //    calodeepbtag_source, calodeepbtag_label             = Handle("edm::AssociationVector<edm::RefToBaseProd<reco::Jet>,vector<float>>"), ("hltDeepCombinedSecondaryVertexBJetTagsCalo:probb")
   
   //
   // Increment Jet Collection
   //
   ++iJetColl;
-
 
   edm::Handle <PFJetCollection> pfJetsColl;
   iEvent.getByToken (PFJetCollectionTag_, pfJetsColl);
@@ -543,9 +540,11 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
   JetInfo[iJetColl].nSVTagVar  = 0;
   JetInfo[iJetColl].nSV = 0;
   JetInfo[iJetColl].nTrkTagVarCSV = 0;
-
+  //xstd::cout << "getting jetTags Coll " << std::endl;
   edm::Handle <ShallowTagCollection> jetTagsColl;
   iEvent.getByToken (jetTagsCollToken, jetTagsColl);
+  //std::cout << " checking for failure" << std::endl;
+  if(!jetTagsColl.isValid()) return;
 
   edm::Handle <std::vector<SVColl> > jetSVTagsColl;
   iEvent.getByToken (svCollToken, jetSVTagsColl);
@@ -868,12 +867,11 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
 	      // apply the V0 filter
 	      std::vector<const reco::Track*> trackPairV0Test(2);
 	      trackPairV0Test[0] = ptrackPtr;
-	      
 	      for (unsigned int jtt=0; jtt < trackSize; ++jtt){
 	      	if (itt == jtt) continue;
 	      	  
 	      	const auto pairTrackRef = (ipInfo.selectedTracks()[jtt]);
-		const reco::Track * pairTrackPtr = reco::btag::toTrack(ptrackRef);
+		const reco::Track * pairTrackPtr = reco::btag::toTrack(pairTrackRef);
 	      	trackPairV0Test[1] = pairTrackPtr;
 	      	
 	      	if (!trackPairV0Filter(trackPairV0Test))
@@ -881,8 +879,7 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
 	      	    JetInfo[iJetColl].Track_isfromV0[JetInfo[iJetColl].nTrack] = 1;
 	      	    break;
 	      	  }
-	      }
-	      
+	      }// jtt
 
 	      ++JetInfo[iJetColl].nTrack;
 

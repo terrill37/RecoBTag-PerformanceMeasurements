@@ -322,6 +322,10 @@ options.register('runPatMuons', False,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
     'True if you want to run Pat Muon Variables')
+options.register('runPatElecs', False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    'True if you want to run Pat Muon Variables')
 options.register('defaults', '',
     VarParsing.multiplicity.singleton,
     VarParsing.varType.string,
@@ -738,6 +742,7 @@ svSource = 'inclusiveCandidateSecondaryVertices'
 muSource = 'muons'
 elSource = 'gedGsfElectrons'
 patMuons = 'selectedPatMuons'
+patElecs = 'selectedPatElectrons'
 trackSource = 'generalTracks'
 fatJetSource = 'fatPFJetsCHS'
 fatJetSourceSoftDrop = 'fatPFJetsSoftDrop'
@@ -766,6 +771,7 @@ if options.miniAOD:
     muSource = 'slimmedMuons'
     elSource = 'slimmedElectrons'
     patMuons = 'slimmedMuons'
+    patElecs = 'slimmedElectrons'
     if not options.runJetClustering:
         jetSource = ('slimmedJetsPuppi' if options.usePuppi else 'slimmedJets')
         patJetSource = 'selectedUpdatedPatJets'+postfix
@@ -1570,6 +1576,7 @@ process.btagana.primaryVertexColl     = cms.InputTag(pvSource)
 process.btagana.Jets                  = cms.InputTag(patJetSource)
 process.btagana.muonCollectionName    = cms.InputTag(muSource)
 process.btagana.patMuonCollectionName = cms.InputTag(patMuons)
+process.btagana.patElecCollectionName = cms.InputTag(patElecs)
 process.btagana.use_ttbar_filter      = cms.bool(options.useTTbarFilter)
 #process.btagana.triggerTable          = cms.InputTag('TriggerResults::HLT') # Data and MC
 process.btagana.triggerTable          = cms.InputTag(trigresults) # Data and MC
@@ -1582,6 +1589,7 @@ process.btagana.runGenVariables     = options.runGenVariables
 process.btagana.runPFElectronVariables = options.runPFElectronVariables
 process.btagana.runPFMuonVariables = options.runPFMuonVariables
 process.btagana.runPatMuons = options.runPatMuons
+process.btagana.runPatElecs = options.runPatElecs
 process.btagana.runCTagVariables = options.runCTagVariables
 process.btagana.runEventInfo = options.runEventInfo
 process.btagana.runOnData = options.runOnData
@@ -1663,6 +1671,10 @@ if process.btagana.produceJetTrackTruthTree:
     process.load("SimTracker.TrackHistory.TrackClassifier_cff")
     process.load("SimTracker.TrackAssociatorProducers.quickTrackAssociatorByHits_cfi")
     process.load("SimTracker.TrackAssociation.trackingParticleRecoTrackAsssociation_cfi")
+
+
+process.btagana.TriggerPathNames = cms.vstring("HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_*",
+					       "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_*")
 
 #---------------------------------------
 

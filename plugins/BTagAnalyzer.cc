@@ -1,3 +1,4 @@
+
 // -*- C++ -*-
 //
 // Package:    BTagAnalyzerT
@@ -276,6 +277,7 @@ private:
   edm::EDGetTokenT<GenEventInfoProduct> src_;  // Generator/handronizer module label
   edm::EDGetTokenT<edm::View<reco::Muon>> muonCollectionName_;
   edm::EDGetTokenT<std::vector<pat::Muon>> patMuonCollectionName_;
+  edm::EDGetTokenT<std::vector<pat::Electron>> patElecCollectionName_;
   edm::EDGetTokenT<reco::GenParticleCollection> genParticleCollectionName_;
   edm::EDGetTokenT<reco::GenParticleCollection> prunedGenParticleCollectionName_;
   edm::EDGetTokenT<edm::TriggerResults> triggerTable_;
@@ -392,6 +394,7 @@ private:
   bool runHadronVariables_;
   bool runGenVariables_;
   bool runPatMuons_;
+  bool runPatElecs_;
   bool runTagVariables_;
   bool runTagVariablesSubJets_;
   bool runCSVTagVariables_;
@@ -577,6 +580,7 @@ BTagAnalyzerT<IPTI,VTX>::BTagAnalyzerT(const edm::ParameterSet& iConfig):
   runHadronVariables_ = iConfig.getParameter<bool>("runHadronVariables");
   runGenVariables_ = iConfig.getParameter<bool>("runGenVariables");
   runPatMuons_ = iConfig.getParameter<bool>("runPatMuons");
+  runPatElecs_ = iConfig.getParameter<bool>("runPatElecs");
   runTagVariables_ = iConfig.getParameter<bool>("runTagVariables");
   runTagVariablesSubJets_ = iConfig.getParameter<bool>("runTagVariablesSubJets");
   runCSVTagVariables_ = iConfig.getParameter<bool>("runCSVTagVariables");
@@ -696,6 +700,7 @@ BTagAnalyzerT<IPTI,VTX>::BTagAnalyzerT(const edm::ParameterSet& iConfig):
 
   muonCollectionName_       = consumes<edm::View<reco::Muon>>(iConfig.getParameter<edm::InputTag>("muonCollectionName"));
   patMuonCollectionName_    = consumes<std::vector<pat::Muon>>(iConfig.getParameter<edm::InputTag>("patMuonCollectionName"));
+  patElecCollectionName_    = consumes<std::vector<pat::Electron>>(iConfig.getParameter<edm::InputTag>("patElecCollectionName"));
   genParticleCollectionName_ = consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles"));
   prunedGenParticleCollectionName_ = consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("prunedGenParticles"));
 
@@ -873,6 +878,7 @@ void BTagAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Event
   EventInfo.nGenPruned = 0;
   EventInfo.nTrkAll    = 0;
   EventInfo.nPatMuon   = 0;
+  EventInfo.nPatElec   = 0;
   EventInfo.mcweight   = 1.;
 
   bool AreBHadrons = false;
@@ -1579,6 +1585,39 @@ void BTagAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Event
   }
 
   //------------------------------------------------------
+  // PAT Elecs
+  //------------------------------------------------------
+  if (runPatElecs_) {
+
+     //fill electron tree
+     //cf. https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2
+     edm::Handle<std::vector<pat::Electron>> patElecsHandle;
+     iEvent.getByToken(patElecCollectionName_, patElecsHandle);
+     for (auto i = patElecsHandle->begin(); i != patElecsHandle->end(); ++i) {
+       //if (!(muon::isLooseMuon(*i))) continue;
+       if(!i->electronID("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V2-veto")) continue;
+	 
+       EventInfo.PatElec_pt[EventInfo.nPatElec] = i->pt();
+       EventInfo.PatElec_eta[EventInfo.nPatElec] = i->eta();
+       EventInfo.PatElec_superClusterEta[EventInfo.nPatElec] = i->superCluster()->eta();
+       EventInfo.PatElec_phi[EventInfo.nPatElec] = i->phi();
+
+       EventInfo.PatElec_isLooseElec[EventInfo.nPatElec] = i->electronID("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V1-loose");
+       EventInfo.PatElec_isMediumElec[EventInfo.nPatElec] = i->electronID("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V1-medium");
+       EventInfo.PatElec_isTightElec[EventInfo.nPatElec] = i->electronID("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V1-tight");
+
+        //if (i->isPFMuon()) {
+        //   EventInfo.PatMuon_iso[EventInfo.nPatMuon] = (i->pfIsolationR04().sumChargedHadronPt + max(0., i->pfIsolationR04().sumNeutralHadronEt + i->pfIsolationR04().sumPhotonEt - 0.5*i->pfIsolationR04().sumPUPt))/i->pt();
+        //} else {
+        //   EventInfo.PatMuon_iso[EventInfo.nPatMuon] = 999.;
+        //}
+        //EventInfo.PatMuon_isoTrackerOnly[EventInfo.nPatMuon] = i->isolationR03().sumPt/i->pt();
+        ++EventInfo.nPatElec;
+     }
+  }
+
+
+  //------------------------------------------------------
   // Muons
   //------------------------------------------------------
   edm::Handle<edm::View<reco::Muon> >  muonsHandle;
@@ -1699,7 +1738,8 @@ void BTagAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Event
   //------------------------------------------------------
 
   //// Fill TTree
-  if ( EventInfo.BitTrigger > 0 || EventInfo.Run < 0 ) {
+  //std::cout << "Event BitTrigger " << EventInfo.BitTrigger << " " << EventInfo.BitTrigger[0] << " " << EventInfo.BitTrigger[1] << " " << EventInfo.BitTrigger[2] << std::endl;
+  if ( EventInfo.BitTrigger[0] > 0 || EventInfo.Run < 0 ) {
     smalltree->Fill();
   }
 
@@ -1719,7 +1759,10 @@ void BTagAnalyzerT<IPTI,VTX>::processTrig(const edm::Handle<edm::TriggerResults>
     {
       int triggerIdx = ( itTrigPathNames - triggerPathNames_.begin() );
       int bitIdx = int(triggerIdx/32);
-      if ( NameCompatible(*itTrigPathNames,triggerList[i]) ) EventInfo.BitTrigger[bitIdx] |= ( 1 << (triggerIdx - bitIdx*32) );
+      if ( NameCompatible(*itTrigPathNames,triggerList[i]) ) {
+	//std::cout << " SEtting Bit on " << triggerList[i] << " bitIdx " << bitIdx << std::endl;
+	EventInfo.BitTrigger[bitIdx] |= ( 1 << (triggerIdx - bitIdx*32) );
+      }
     }
 
   } //// Loop over trigger names

@@ -1,12 +1,76 @@
 import FWCore.ParameterSet.Config as cms
 
+
+from FWCore.ParameterSet.VarParsing import VarParsing
+import copy
+from pdb import set_trace
+
+###############################
+####### Parameters ############
+###############################
+
+options = VarParsing ('python')
+
+options.register('runOnData', False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "Run this on real data"
+)
+options.register('outFilename', 'JetTree',
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.string,
+    "Output file name"
+)
+options.register('reportEvery', 10,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.int,
+    "Report every N events (default is N=1)"
+)
+options.register('wantSummary', False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "Print out trigger and timing summary"
+)
+
+# Change eta for extended forward pixel coverage
+options.register('maxJetEta', 2.5,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.float,
+    "Maximum jet |eta| (default is 2.5)"
+)
+options.register('minJetPt', 20.0,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.float,
+    "Minimum jet pt (default is 20)"
+)
+
+options.register('globalTag', 'FIXME',
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.string,
+    "global tag, no default value provided"
+)
+
+
+options.register('groups', [],
+    VarParsing.multiplicity.list,
+    VarParsing.varType.string,
+    'variable groups to be stored')
+
+
+## 'maxEvents' is already registered by the Framework, changing default value
+options.setDefault('maxEvents', -1)
+
+options.parseArguments()
+
+
 process = cms.Process("MYHLT")
 
 process.source = cms.Source("PoolSource",
     #fileNames = cms.untracked.vstring('root://cms-xrd-global.cern.ch//store/data/Run2018D/MuonEG/RAW/v1/000/321/414/00000/66EBA7E1-DDA2-E811-A897-FA163E587FED.root'),
-    fileNames = cms.untracked.vstring('file:66EBA7E1-DDA2-E811-A897-FA163E587FED.root'),
+    #fileNames = cms.untracked.vstring('file:66EBA7E1-DDA2-E811-A897-FA163E587FED.root'),
+    fileNames = cms.untracked.vstring(),
     inputCommands = cms.untracked.vstring('keep *'),
-    lumisToProcess = cms.untracked.VLuminosityBlockRange("321414:935-321414:945"),
+    #lumisToProcess = cms.untracked.VLuminosityBlockRange("321414:935-321414:945"),
     #secondaryFileNames = cms.untracked.vstring('root://cms-xrd-global.cern.ch//store/data/Run2018D/MuonEG/MINIAOD/PromptReco-v2/000/321/414/00000/58F2E428-96A4-E811-846A-FA163E3A858B.root'),
     skipEvents = cms.untracked.uint32(0)
 )
@@ -3714,7 +3778,7 @@ process.datasets = cms.PSet(
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100)
+    input = cms.untracked.int32(options.maxEvents)
 )
 
 process.options = cms.untracked.PSet(
@@ -18208,7 +18272,7 @@ process.GlobalTag = cms.ESSource("PoolDBESSource",
     RefreshEachRun = cms.untracked.bool(False),
     RefreshOpenIOVs = cms.untracked.bool(False),
     connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-    globaltag = cms.string('101X_dataRun2_Prompt_v10'),
+    globaltag = cms.string(options.globalTag),
     pfnPostfix = cms.untracked.string('None'),
     snapshotTime = cms.string(''),
     toGet = cms.VPSet()
@@ -18578,56 +18642,6 @@ process.noFilter_CaloDeepCSV = cms.Path(process.HLTBeginSequence+process.hltPren
 # Begin BTagAna
 
 
-from FWCore.ParameterSet.VarParsing import VarParsing
-import copy
-from pdb import set_trace
-
-###############################
-####### Parameters ############
-###############################
-
-options = VarParsing ('python')
-
-options.register('runOnData', False,
-    VarParsing.multiplicity.singleton,
-    VarParsing.varType.bool,
-    "Run this on real data"
-)
-options.register('outFilename', 'JetTree',
-    VarParsing.multiplicity.singleton,
-    VarParsing.varType.string,
-    "Output file name"
-)
-options.register('reportEvery', 10,
-    VarParsing.multiplicity.singleton,
-    VarParsing.varType.int,
-    "Report every N events (default is N=1)"
-)
-options.register('wantSummary', False,
-    VarParsing.multiplicity.singleton,
-    VarParsing.varType.bool,
-    "Print out trigger and timing summary"
-)
-
-# Change eta for extended forward pixel coverage
-options.register('maxJetEta', 2.5,
-    VarParsing.multiplicity.singleton,
-    VarParsing.varType.float,
-    "Maximum jet |eta| (default is 2.5)"
-)
-options.register('minJetPt', 20.0,
-    VarParsing.multiplicity.singleton,
-    VarParsing.varType.float,
-    "Minimum jet pt (default is 20)"
-)
-
-
-options.register('groups', [],
-    VarParsing.multiplicity.list,
-    VarParsing.varType.string,
-    'variable groups to be stored')
-options.parseArguments()
-
 
 
 from RecoBTag.PerformanceMeasurements.BTagAnalyzer_cff import *
@@ -18661,174 +18675,147 @@ for requiredGroup in options.groups:
 
 
 print "Running on data: %s"%('True' if options.runOnData else 'False')
+print "Running with globalTag: %s"%(options.globalTag)
 
 trigresults='TriggerResults::HLT'
 
+if options.inputFiles:
+    process.source.fileNames = options.inputFiles
+
 ## b-tag infos
-bTagInfosLegacy = [
-    'impactParameterTagInfos'
-   ,'secondaryVertexTagInfos'
-   ,'inclusiveSecondaryVertexFinderTagInfos'
-   ,'secondaryVertexNegativeTagInfos'
-   ,'inclusiveSecondaryVertexFinderNegativeTagInfos'
-   ,'softPFMuonsTagInfos'
-   ,'softPFElectronsTagInfos'
-]
-bTagInfos = [
-    'pfImpactParameterTagInfos'
-   ,'pfSecondaryVertexTagInfos'
-   ,'pfInclusiveSecondaryVertexFinderTagInfos'
-   ,'pfSecondaryVertexNegativeTagInfos'
-   ,'pfInclusiveSecondaryVertexFinderNegativeTagInfos'
-   ,'softPFMuonsTagInfos'
-   ,'softPFElectronsTagInfos'
-   ,'pfInclusiveSecondaryVertexFinderCvsLTagInfos'
-   ,'pfInclusiveSecondaryVertexFinderNegativeCvsLTagInfos'
-   ,'pfDeepFlavourTagInfos'
-]
-bTagInfos_noDeepFlavour = bTagInfos[:-1]
-## b-tag discriminators
-bTagDiscriminatorsLegacy = set([
-    'jetBProbabilityBJetTags'
-   ,'jetProbabilityBJetTags'
-   ,'positiveOnlyJetBProbabilityBJetTags'
-   ,'positiveOnlyJetProbabilityBJetTags'
-   ,'negativeOnlyJetBProbabilityBJetTags'
-   ,'negativeOnlyJetProbabilityBJetTags'
-   ,'trackCountingHighPurBJetTags'
-   ,'trackCountingHighEffBJetTags'
-   ,'negativeTrackCountingHighEffBJetTags'
-   ,'negativeTrackCountingHighPurBJetTags'
-   ,'simpleSecondaryVertexHighEffBJetTags'
-   ,'simpleSecondaryVertexHighPurBJetTags'
-   ,'negativeSimpleSecondaryVertexHighEffBJetTags'
-   ,'negativeSimpleSecondaryVertexHighPurBJetTags'
-   ,'combinedSecondaryVertexV2BJetTags'
-   ,'positiveCombinedSecondaryVertexV2BJetTags'
-   ,'negativeCombinedSecondaryVertexV2BJetTags'
-   ,'combinedInclusiveSecondaryVertexV2BJetTags'
-   ,'positiveCombinedInclusiveSecondaryVertexV2BJetTags'
-   ,'negativeCombinedInclusiveSecondaryVertexV2BJetTags'
-   ,'softPFMuonBJetTags'
-   ,'positiveSoftPFMuonBJetTags'
-   ,'negativeSoftPFMuonBJetTags'
-   ,'softPFElectronBJetTags'
-   ,'positiveSoftPFElectronBJetTags'
-   ,'negativeSoftPFElectronBJetTags'
-   ,'combinedMVAv2BJetTags'
-   ,'negativeCombinedMVAv2BJetTags'
-   ,'positiveCombinedMVAv2BJetTags'
-])
-bTagDiscriminators = set([
-    'pfJetBProbabilityBJetTags'
-   ,'pfJetProbabilityBJetTags'
-   ,'pfPositiveOnlyJetBProbabilityBJetTags'
-   ,'pfPositiveOnlyJetProbabilityBJetTags'
-   ,'pfNegativeOnlyJetBProbabilityBJetTags'
-   ,'pfNegativeOnlyJetProbabilityBJetTags'
-   ,'pfTrackCountingHighPurBJetTags'
-   ,'pfTrackCountingHighEffBJetTags'
-   ,'pfNegativeTrackCountingHighPurBJetTags'
-   ,'pfNegativeTrackCountingHighEffBJetTags'
-   ,'pfSimpleSecondaryVertexHighEffBJetTags'
-   ,'pfSimpleSecondaryVertexHighPurBJetTags'
-   ,'pfNegativeSimpleSecondaryVertexHighEffBJetTags'
-   ,'pfNegativeSimpleSecondaryVertexHighPurBJetTags'
-   ,'pfCombinedSecondaryVertexV2BJetTags'
-   ,'pfPositiveCombinedSecondaryVertexV2BJetTags'
-   ,'pfNegativeCombinedSecondaryVertexV2BJetTags'
-   ,'pfCombinedInclusiveSecondaryVertexV2BJetTags'
-   ,'pfPositiveCombinedInclusiveSecondaryVertexV2BJetTags'
-   ,'pfNegativeCombinedInclusiveSecondaryVertexV2BJetTags'
-   ,'softPFMuonBJetTags'
-   ,'positiveSoftPFMuonBJetTags'
-   ,'negativeSoftPFMuonBJetTags'
-   ,'softPFElectronBJetTags'
-   ,'positiveSoftPFElectronBJetTags'
-   ,'negativeSoftPFElectronBJetTags'
-   ,'pfCombinedMVAV2BJetTags'
-   ,'pfNegativeCombinedMVAV2BJetTags'
-   ,'pfPositiveCombinedMVAV2BJetTags'
-   ,'pfCombinedCvsBJetTags'
-   ,'pfNegativeCombinedCvsBJetTags'
-   ,'pfPositiveCombinedCvsBJetTags'
-   ,'pfCombinedCvsLJetTags'
-   ,'pfNegativeCombinedCvsLJetTags'
-   ,'pfPositiveCombinedCvsLJetTags'
-    # DeepCSV
-  , 'pfDeepCSVJetTags:probudsg'
-  , 'pfDeepCSVJetTags:probb'
-  , 'pfDeepCSVJetTags:probc'
-  , 'pfDeepCSVJetTags:probbb'
-  , 'pfNegativeDeepCSVJetTags:probudsg'
-  , 'pfNegativeDeepCSVJetTags:probb'
-  , 'pfNegativeDeepCSVJetTags:probc'
-  , 'pfNegativeDeepCSVJetTags:probbb'
-  , 'pfPositiveDeepCSVJetTags:probudsg'
-  , 'pfPositiveDeepCSVJetTags:probb'
-  , 'pfPositiveDeepCSVJetTags:probc'
-  , 'pfPositiveDeepCSVJetTags:probbb'
-    # DeepFlavour
-  , 'pfDeepFlavourJetTags:probb'
-  , 'pfDeepFlavourJetTags:probbb'
-  , 'pfDeepFlavourJetTags:problepb'
-  , 'pfDeepFlavourJetTags:probc'
-  , 'pfDeepFlavourJetTags:probuds'
-  , 'pfDeepFlavourJetTags:probg'
-  , 'pfNegativeDeepFlavourJetTags:probb'
-  , 'pfNegativeDeepFlavourJetTags:probbb'
-  , 'pfNegativeDeepFlavourJetTags:problepb'
-  , 'pfNegativeDeepFlavourJetTags:probc'
-  , 'pfNegativeDeepFlavourJetTags:probuds'
-  , 'pfNegativeDeepFlavourJetTags:probg'
-    # DeepFlavour with pruned input
-  , 'pfDeepFlavourPrunedJetTags:probb'
-  , 'pfDeepFlavourPrunedJetTags:probbb'
-  , 'pfDeepFlavourPrunedJetTags:problepb'
-  , 'pfDeepFlavourPrunedJetTags:probc'
-  , 'pfDeepFlavourPrunedJetTags:probuds'
-  , 'pfDeepFlavourPrunedJetTags:probg'
-  , 'pfNegativeDeepFlavourPrunedJetTags:probb'
-  , 'pfNegativeDeepFlavourPrunedJetTags:probbb'
-  , 'pfNegativeDeepFlavourPrunedJetTags:problepb'
-  , 'pfNegativeDeepFlavourPrunedJetTags:probc'
-  , 'pfNegativeDeepFlavourPrunedJetTags:probuds'
-  , 'pfNegativeDeepFlavourPrunedJetTags:probg'
+#bTagInfosLegacy = [
+#    'impactParameterTagInfos'
+#   ,'secondaryVertexTagInfos'
+#   ,'inclusiveSecondaryVertexFinderTagInfos'
+#   ,'secondaryVertexNegativeTagInfos'
+#   ,'inclusiveSecondaryVertexFinderNegativeTagInfos'
+#   ,'softPFMuonsTagInfos'
+#   ,'softPFElectronsTagInfos'
+#]
+#bTagInfos = [
+#    'pfImpactParameterTagInfos'
+#   ,'pfSecondaryVertexTagInfos'
+#   ,'pfInclusiveSecondaryVertexFinderTagInfos'
+#   ,'pfSecondaryVertexNegativeTagInfos'
+#   ,'pfInclusiveSecondaryVertexFinderNegativeTagInfos'
+#   ,'softPFMuonsTagInfos'
+#   ,'softPFElectronsTagInfos'
+#   ,'pfInclusiveSecondaryVertexFinderCvsLTagInfos'
+#   ,'pfInclusiveSecondaryVertexFinderNegativeCvsLTagInfos'
+#   ,'pfDeepFlavourTagInfos'
+#]
+#bTagInfos_noDeepFlavour = bTagInfos[:-1]
+### b-tag discriminators
+#bTagDiscriminatorsLegacy = set([
+#    'jetBProbabilityBJetTags'
+#   ,'jetProbabilityBJetTags'
+#   ,'positiveOnlyJetBProbabilityBJetTags'
+#   ,'positiveOnlyJetProbabilityBJetTags'
+#   ,'negativeOnlyJetBProbabilityBJetTags'
+#   ,'negativeOnlyJetProbabilityBJetTags'
+#   ,'trackCountingHighPurBJetTags'
+#   ,'trackCountingHighEffBJetTags'
+#   ,'negativeTrackCountingHighEffBJetTags'
+#   ,'negativeTrackCountingHighPurBJetTags'
+#   ,'simpleSecondaryVertexHighEffBJetTags'
+#   ,'simpleSecondaryVertexHighPurBJetTags'
+#   ,'negativeSimpleSecondaryVertexHighEffBJetTags'
+#   ,'negativeSimpleSecondaryVertexHighPurBJetTags'
+#   ,'combinedSecondaryVertexV2BJetTags'
+#   ,'positiveCombinedSecondaryVertexV2BJetTags'
+#   ,'negativeCombinedSecondaryVertexV2BJetTags'
+#   ,'combinedInclusiveSecondaryVertexV2BJetTags'
+#   ,'positiveCombinedInclusiveSecondaryVertexV2BJetTags'
+#   ,'negativeCombinedInclusiveSecondaryVertexV2BJetTags'
+#   ,'softPFMuonBJetTags'
+#   ,'positiveSoftPFMuonBJetTags'
+#   ,'negativeSoftPFMuonBJetTags'
+#   ,'softPFElectronBJetTags'
+#   ,'positiveSoftPFElectronBJetTags'
+#   ,'negativeSoftPFElectronBJetTags'
+#   ,'combinedMVAv2BJetTags'
+#   ,'negativeCombinedMVAv2BJetTags'
+#   ,'positiveCombinedMVAv2BJetTags'
+#])
+#bTagDiscriminators = set([
+#    'pfJetBProbabilityBJetTags'
+#   ,'pfJetProbabilityBJetTags'
+#   ,'pfPositiveOnlyJetBProbabilityBJetTags'
+#   ,'pfPositiveOnlyJetProbabilityBJetTags'
+#   ,'pfNegativeOnlyJetBProbabilityBJetTags'
+#   ,'pfNegativeOnlyJetProbabilityBJetTags'
+#   ,'pfTrackCountingHighPurBJetTags'
+#   ,'pfTrackCountingHighEffBJetTags'
+#   ,'pfNegativeTrackCountingHighPurBJetTags'
+#   ,'pfNegativeTrackCountingHighEffBJetTags'
+#   ,'pfSimpleSecondaryVertexHighEffBJetTags'
+#   ,'pfSimpleSecondaryVertexHighPurBJetTags'
+#   ,'pfNegativeSimpleSecondaryVertexHighEffBJetTags'
+#   ,'pfNegativeSimpleSecondaryVertexHighPurBJetTags'
+#   ,'pfCombinedSecondaryVertexV2BJetTags'
+#   ,'pfPositiveCombinedSecondaryVertexV2BJetTags'
+#   ,'pfNegativeCombinedSecondaryVertexV2BJetTags'
+#   ,'pfCombinedInclusiveSecondaryVertexV2BJetTags'
+#   ,'pfPositiveCombinedInclusiveSecondaryVertexV2BJetTags'
+#   ,'pfNegativeCombinedInclusiveSecondaryVertexV2BJetTags'
+#   ,'softPFMuonBJetTags'
+#   ,'positiveSoftPFMuonBJetTags'
+#   ,'negativeSoftPFMuonBJetTags'
+#   ,'softPFElectronBJetTags'
+#   ,'positiveSoftPFElectronBJetTags'
+#   ,'negativeSoftPFElectronBJetTags'
+#   ,'pfCombinedMVAV2BJetTags'
+#   ,'pfNegativeCombinedMVAV2BJetTags'
+#   ,'pfPositiveCombinedMVAV2BJetTags'
+#   ,'pfCombinedCvsBJetTags'
+#   ,'pfNegativeCombinedCvsBJetTags'
+#   ,'pfPositiveCombinedCvsBJetTags'
+#   ,'pfCombinedCvsLJetTags'
+#   ,'pfNegativeCombinedCvsLJetTags'
+#   ,'pfPositiveCombinedCvsLJetTags'
+#    # DeepCSV
+#  , 'pfDeepCSVJetTags:probudsg'
+#  , 'pfDeepCSVJetTags:probb'
+#  , 'pfDeepCSVJetTags:probc'
+#  , 'pfDeepCSVJetTags:probbb'
+#  , 'pfNegativeDeepCSVJetTags:probudsg'
+#  , 'pfNegativeDeepCSVJetTags:probb'
+#  , 'pfNegativeDeepCSVJetTags:probc'
+#  , 'pfNegativeDeepCSVJetTags:probbb'
+#  , 'pfPositiveDeepCSVJetTags:probudsg'
+#  , 'pfPositiveDeepCSVJetTags:probb'
+#  , 'pfPositiveDeepCSVJetTags:probc'
+#  , 'pfPositiveDeepCSVJetTags:probbb'
+#    # DeepFlavour
+#  , 'pfDeepFlavourJetTags:probb'
+#  , 'pfDeepFlavourJetTags:probbb'
+#  , 'pfDeepFlavourJetTags:problepb'
+#  , 'pfDeepFlavourJetTags:probc'
+#  , 'pfDeepFlavourJetTags:probuds'
+#  , 'pfDeepFlavourJetTags:probg'
+#  , 'pfNegativeDeepFlavourJetTags:probb'
+#  , 'pfNegativeDeepFlavourJetTags:probbb'
+#  , 'pfNegativeDeepFlavourJetTags:problepb'
+#  , 'pfNegativeDeepFlavourJetTags:probc'
+#  , 'pfNegativeDeepFlavourJetTags:probuds'
+#  , 'pfNegativeDeepFlavourJetTags:probg'
+#    # DeepFlavour with pruned input
+#  , 'pfDeepFlavourPrunedJetTags:probb'
+#  , 'pfDeepFlavourPrunedJetTags:probbb'
+#  , 'pfDeepFlavourPrunedJetTags:problepb'
+#  , 'pfDeepFlavourPrunedJetTags:probc'
+#  , 'pfDeepFlavourPrunedJetTags:probuds'
+#  , 'pfDeepFlavourPrunedJetTags:probg'
+#  , 'pfNegativeDeepFlavourPrunedJetTags:probb'
+#  , 'pfNegativeDeepFlavourPrunedJetTags:probbb'
+#  , 'pfNegativeDeepFlavourPrunedJetTags:problepb'
+#  , 'pfNegativeDeepFlavourPrunedJetTags:probc'
+#  , 'pfNegativeDeepFlavourPrunedJetTags:probuds'
+#  , 'pfNegativeDeepFlavourPrunedJetTags:probg'
+#
+#])
 
-])
-
-bTagDiscriminators_no_deepFlavour = {i for i in bTagDiscriminators if 'DeepFlavour' not in i}
-
-
-## Full list of bTagDiscriminators for SoftDrop subjets
-bTagDiscriminatorsSubJets  = copy.deepcopy(bTagDiscriminators_no_deepFlavour)
-bTagDiscriminatorsSoftDrop = copy.deepcopy(bTagDiscriminators_no_deepFlavour)
-
-
-## Postfix
-postfix = "PFlow"
-## Various collection names
-genParticles = 'genParticles'
-jetSource = 'pfJetsPFBRECO'+postfix
-patJetSource = 'selectedPatJets'+postfix
-genJetCollection = 'ak4GenJetsNoNu'
-pfCandidates = 'particleFlow'
-pvSource = 'offlinePrimaryVertices'
-svSource = 'inclusiveCandidateSecondaryVertices'
-muSource = 'muons'
-elSource = 'gedGsfElectrons'
-patMuons = 'selectedPatMuons'
-trackSource = 'generalTracks'
-fatJetSource = 'fatPFJetsCHS'
-fatJetSourceSoftDrop = 'fatPFJetsSoftDrop'
-fatJetSourcePruned = 'fatPFJetsPruned'
-fatGenJetCollection = 'genFatJetsNoNu'
-fatGenJetCollectionSoftDrop = 'genFatJetsNoNuSoftDrop'
-fatGenJetCollectionPruned = 'genFatJetsNoNuPruned'
-patFatJetSource = 'packedPatJetsFatPF'
-subJetSourceSoftDrop = 'fatPFJetsSoftDrop:SubJets'
-patSubJetSourceSoftDrop = 'selectedPatJetsSoftDropFatPFPacked:SubJets'
-
+#bTagDiscriminators_no_deepFlavour = {i for i in bTagDiscriminators if 'DeepFlavour' not in i}
 
 #if not options.eras:
 #	process = cms.Process("BTagAna")

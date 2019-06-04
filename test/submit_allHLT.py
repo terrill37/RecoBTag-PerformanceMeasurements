@@ -9,7 +9,7 @@ import argparse
 def getOptions() :
 
   parser = argparse.ArgumentParser(description='CLI for CRAB config file settings')
-  parser.add_argument('cmsRun_cfg', type=str, default="runBTagAnalyzer_cfg.py", 
+  parser.add_argument('cmsRun_cfg', type=str, default="runHLTBTagAnalyzer_cfg.py", 
       help='The crab script you want to submit')
   parser.add_argument('-i', '--inputFiles', type=str, default='CRAB/input.txt',
       help='Input files that need to be shipped with the job')
@@ -17,7 +17,7 @@ def getOptions() :
       help='Input parameters for config file')
   parser.add_argument('-t', '--maxJobRuntimeMin', type=int, default=2000,
       help='The maximum runtime (in minutes) per job')
-  parser.add_argument('-m', '--maxMemoryMB', type=int, default=2500,
+  parser.add_argument('-m', '--maxMemoryMB', type=int, default=3000,
       help='Maximum amount of memory (in MB) a job is allowed to use')
   parser.add_argument('-l', '--lumiMask', type=str, default='',
       help='The JSON file containing good lumi list')
@@ -65,8 +65,8 @@ def main():
     config.JobType.maxMemoryMB = args.maxMemoryMB
     
     config.Data.inputDataset = None
-    config.Data.splitting = ''
-    config.Data.unitsPerJob = 1
+    config.Data.splitting = '' # Testwithout
+    config.Data.unitsPerJob = 1 # These get overwritten below
     config.Data.ignoreLocality = False
     config.Data.publication = False
     config.Data.publishDBS = 'phys03'
@@ -107,16 +107,17 @@ def main():
         config.Data.inputDataset = job
         if datatier == 'MINIAODSIM': 
           config.Data.splitting = 'FileBased'
-        elif datatier == 'AODSIM': 
-          config.Data.splitting = 'FileBased'
         elif datatier == 'MINIAOD': 
           config.Data.splitting = 'LumiBased'
-          config.Data.unitsPerJob = 40
+          config.Data.unitsPerJob = 20
           config.Data.lumiMask = args.lumiMask
-        elif datatier == 'AOD': 
+        elif datatier == 'RAW':
           config.Data.splitting = 'LumiBased'
-          config.Data.unitsPerJob = 100
-          config.Data.lumiMask = args.lumiMask
+          config.Data.unitsPerJob = 20
+          config.Data.lumiMask = args.lumiMask          
+        elif datatier == "GEN-SIM-RAW":
+          config.Data.splitting = 'FileBased'          
+
         if args.outLFNDirBase and not args.outLFNDirBase.isspace(): 
           config.Data.outLFNDirBase = os.path.join(args.outLFNDirBase,args.version)
         config.Data.outputDatasetTag = cond
