@@ -183,9 +183,14 @@ class EventInfoBranches {
     float PatElec_eta[nMaxPatElec];
     float PatElec_superClusterEta[nMaxPatElec];
     float PatElec_phi[nMaxPatElec];
-    bool  PatElec_isLooseElec[nMaxPatElec];
-    bool  PatElec_isMediumElec[nMaxPatElec];
-    bool  PatElec_isTightElec[nMaxPatElec];
+    int  PatElec_isLooseElec[nMaxPatElec];
+    int  PatElec_isMediumElec[nMaxPatElec];
+    int  PatElec_isTightElec[nMaxPatElec];
+    float PatElec_sumChargedHadronPt[nMaxPatElec];
+    float PatElec_sumNeutralHadronEt[nMaxPatElec];
+    float PatElec_sumPhotonEt[nMaxPatElec]; 
+    float PatElec_sumPUPt[nMaxPatElec];
+
     //float PatMuon_iso[nMaxPatMuon];
     //float PatMuon_isoTrackerOnly[nMaxPatMuon];
     //float PatMuon_IP[nMaxPatMuon];
@@ -392,6 +397,13 @@ class EventInfoBranches {
       if(variableParser.isToBeStored("PatElec_isLooseElec")) tree->Branch("PatElec_isLooseElec", PatElec_isLooseElec, "PatElec_isLooseElec[nPatElec]/I");
       if(variableParser.isToBeStored("PatElec_isMediumElec")) tree->Branch("PatElec_isMediumElec", PatElec_isMediumElec, "PatElec_isMediumElec[nPatElec]/I");
       if(variableParser.isToBeStored("PatElec_isTightElec")) tree->Branch("PatElec_isTightElec", PatElec_isTightElec, "PatElec_isTightElec[nPatElec]/I");
+
+       if(variableParser.isToBeStored("PatElec_sumChargedHadronPt")) tree->Branch("PatElec_sumChargedHadronPt", PatElec_sumChargedHadronPt ,  "PatElec_sumChargedHadronPt[nPatElec]/F");
+       if(variableParser.isToBeStored("PatElec_sumNeutralHadronEt")) tree->Branch("PatElec_sumNeutralHadronEt",	PatElec_sumNeutralHadronEt ,  "PatElec_sumNeutralHadronEt[nPatElec]/F");
+       if(variableParser.isToBeStored("PatElec_sumPhotonEt"       )) tree->Branch("PatElec_sumPhotonEt"       ,	PatElec_sumPhotonEt        ,  "PatElec_sumPhotonEt[nPatElec]/F"       );
+       if(variableParser.isToBeStored("PatElec_sumPUPt"           )) tree->Branch("PatElec_sumPUPt"           ,	PatElec_sumPUPt            ,  "PatElec_sumPUPt[nPatElec]/F"           );
+
+
     }
 
     void ReadBranches(TTree *tree, VariableParser variableParser){
@@ -579,7 +591,10 @@ class EventInfoBranches {
       if(variableParser.isToBeStored("PatElec_isLooseElec")) tree->SetBranchAddress("PatElec_isLooseElec", PatElec_isLooseElec);
       if(variableParser.isToBeStored("PatElec_isMediumElec")) tree->SetBranchAddress("PatElec_isMediumElec", PatElec_isMediumElec);
       if(variableParser.isToBeStored("PatElec_isTightElec")) tree->SetBranchAddress("PatElec_isTightElec", PatElec_isTightElec);
-
+      if(variableParser.isToBeStored("PatElec_sumChargedHadronPt"))  tree->SetBranchAddress("PatElec_sumChargedHadronPt"  , PatElec_sumChargedHadronPt);
+      if(variableParser.isToBeStored("PatElec_sumNeutralHadronEt"))  tree->SetBranchAddress("PatElec_sumNeutralHadronEt"  , PatElec_sumNeutralHadronEt);
+      if(variableParser.isToBeStored("PatElec_sumPhotonEt"       ))  tree->SetBranchAddress("PatElec_sumPhotonEt"         , PatElec_sumPhotonEt);
+      if(variableParser.isToBeStored("PatElec_sumPUPt"           ))  tree->SetBranchAddress("PatElec_sumPUPt"             , PatElec_sumPUPt);
 
     }
 

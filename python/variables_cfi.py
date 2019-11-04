@@ -1199,7 +1199,38 @@ variableList = [
       requires    = cms.vstring("nPatElec"),
       runOptions  = cms.vstring("runPatElecs"),
     ),
-
+    cms.PSet(
+      variable    = cms.string("PatElec_sumChargedHadronPt"),
+      store       = cms.bool(False),
+      mconly      = cms.bool(False),
+      description = cms.string("PatElec_sumChargedHadronPt"),
+      requires    = cms.vstring("nPatElec"),
+      runOptions  = cms.vstring("runPatElecs"),
+    ),
+    cms.PSet(
+      variable    = cms.string("PatElec_sumNeutralHadronEt"),
+      store       = cms.bool(False),
+      mconly      = cms.bool(False),
+      description = cms.string("PatElec_sumNeutralHadronEt"),
+      requires    = cms.vstring("nPatElec"),
+      runOptions  = cms.vstring("runPatElecs"),
+    ),
+    cms.PSet(
+      variable    = cms.string("PatElec_sumPhotonEt"),
+      store       = cms.bool(False),
+      mconly      = cms.bool(False),
+      description = cms.string("PatElec_sumPhotonEt"),
+      requires    = cms.vstring("nPatElec"),
+      runOptions  = cms.vstring("runPatElecs"),
+    ),
+    cms.PSet(
+      variable    = cms.string("PatElec_sumPUPt"),
+      store       = cms.bool(False),
+      mconly      = cms.bool(False),
+      description = cms.string("PatElec_sumPUPt"),
+      requires    = cms.vstring("nPatElec"),
+      runOptions  = cms.vstring("runPatElecs"),
+    ),
 
     cms.PSet(
       variable    = cms.string("ttbar_chan"),

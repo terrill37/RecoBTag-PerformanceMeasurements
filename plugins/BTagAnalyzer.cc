@@ -1595,23 +1595,30 @@ void BTagAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Event
      iEvent.getByToken(patElecCollectionName_, patElecsHandle);
      for (auto i = patElecsHandle->begin(); i != patElecsHandle->end(); ++i) {
        //if (!(muon::isLooseMuon(*i))) continue;
-       if(!i->electronID("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V2-veto")) continue;
+       if(!i->electronID("cutBasedElectronID-Fall17-94X-V1-loose")) continue;
 	 
        EventInfo.PatElec_pt[EventInfo.nPatElec] = i->pt();
        EventInfo.PatElec_eta[EventInfo.nPatElec] = i->eta();
        EventInfo.PatElec_superClusterEta[EventInfo.nPatElec] = i->superCluster()->eta();
        EventInfo.PatElec_phi[EventInfo.nPatElec] = i->phi();
 
-       EventInfo.PatElec_isLooseElec[EventInfo.nPatElec] = i->electronID("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V1-loose");
-       EventInfo.PatElec_isMediumElec[EventInfo.nPatElec] = i->electronID("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V1-medium");
-       EventInfo.PatElec_isTightElec[EventInfo.nPatElec] = i->electronID("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V1-tight");
+       EventInfo.PatElec_isLooseElec[EventInfo.nPatElec] = int(i->electronID("cutBasedElectronID-Fall17-94X-V1-loose"));
+       EventInfo.PatElec_isMediumElec[EventInfo.nPatElec] = int(i->electronID("cutBasedElectronID-Fall17-94X-V1-medium"));
+       EventInfo.PatElec_isTightElec[EventInfo.nPatElec] = int(i->electronID("cutBasedElectronID-Fall17-94X-V1-tight"));
 
         //if (i->isPFMuon()) {
         //   EventInfo.PatMuon_iso[EventInfo.nPatMuon] = (i->pfIsolationR04().sumChargedHadronPt + max(0., i->pfIsolationR04().sumNeutralHadronEt + i->pfIsolationR04().sumPhotonEt - 0.5*i->pfIsolationR04().sumPUPt))/i->pt();
         //} else {
         //   EventInfo.PatMuon_iso[EventInfo.nPatMuon] = 999.;
         //}
-        //EventInfo.PatMuon_isoTrackerOnly[EventInfo.nPatMuon] = i->isolationR03().sumPt/i->pt();
+        //EventInfo.PatMuon_isoTrackerOnly[EventInfo.nPatMuon] = 
+       //float iso = i->isolationR03().sumPt/i->pt();
+
+       GsfElectron::PflowIsolationVariables ElecIsoVars = i->pfIsolationVariables();
+       EventInfo.PatElec_sumChargedHadronPt[EventInfo.nPatElec] = ElecIsoVars.sumChargedHadronPt;
+       EventInfo.PatElec_sumNeutralHadronEt[EventInfo.nPatElec] = ElecIsoVars.sumNeutralHadronEt;
+       EventInfo.PatElec_sumPhotonEt       [EventInfo.nPatElec] = ElecIsoVars.sumPhotonEt;
+       EventInfo.PatElec_sumPUPt           [EventInfo.nPatElec] = ElecIsoVars.sumPUPt;
         ++EventInfo.nPatElec;
      }
   }

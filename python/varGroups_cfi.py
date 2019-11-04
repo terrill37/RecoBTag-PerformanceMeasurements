@@ -300,6 +300,10 @@ groupSet = cms.PSet(
         "PatElec_isLooseElec",
         "PatElec_isMediumElec",
         "PatElec_isTightElec",
+        "PatElec_sumChargedHadronPt",
+        "PatElec_sumNeutralHadronEt",
+        "PatElec_sumPhotonEt"       ,
+        "PatElec_sumPUPt"           ,
       ),
     ),
     cms.PSet(

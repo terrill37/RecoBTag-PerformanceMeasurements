@@ -68,6 +68,9 @@ bTagAnalyzerCommon = cms.PSet(
     decayLengthSubJets       = cms.double(5.0),
     deltaRSubJets            = cms.double(0.3),
     TriggerPathNames = cms.vstring(
+        # TTBar Triggers
+        "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_*",
+        "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_*",
         # based on https://cmswbm.cern.ch/cmsdb/servlet/HLTSummary?RUN=297050&NAME=/cdaq/physics/Run2017/2e34/v1.1.1/HLT/V2
         # PF Jets
         "HLT_PFJet40_v*",
@@ -123,9 +126,6 @@ bTagAnalyzerCommon = cms.PSet(
         "HLT_BTagMu_AK8DiJet170_Mu5_noalgo_v*",
         "HLT_BTagMu_AK8Jet300_Mu5_noalgo_v*",
         "HLT_BTagMu_AK8Jet170_DoubleMu5_noalgo_v*",
-        # TTBar Triggers
-        "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_*",
-        "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_*",
     ),
     TTbarTriggerPathNames = cms.vstring(
         # trigger for ttbar: https://twiki.cern.ch/twiki/bin/viewauth/CMS/TWikiTopRefEventSel#Triggers
