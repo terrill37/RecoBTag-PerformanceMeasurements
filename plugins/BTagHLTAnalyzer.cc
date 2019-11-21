@@ -140,7 +140,7 @@
 //
 // constants, enums and typedefs
 //
-typedef std::vector<reco::CaloJet> CaloJetCollection ;
+// typedef std::vector<reco::CaloJet> CaloJetCollection ;
 typedef std::vector<reco::PFJet> PFJetCollection ;
 typedef std::vector<reco::ShallowTagInfo> ShallowTagCollection ;
 typedef edm::AssociationVector<edm::RefToBaseProd<reco::Jet>,std::vector<float> > HLTBTagValue;
@@ -169,13 +169,13 @@ namespace BTagHLT {
   const reco::TrackBaseRef toTrackRef(const edm::Ptr<reco::Candidate> & cnd)
     {
       const pat::PackedCandidate * pcand = dynamic_cast<const pat::PackedCandidate *>(cnd.get());
-    
+
       if(pcand) // MiniAOD case
         return reco::TrackBaseRef(); // return null reference since no tracks are stored in MiniAOD
       else
       {
         const reco::PFCandidate * pfcand = dynamic_cast<const reco::PFCandidate *>(cnd.get());
-    
+
         if ( (std::abs(pfcand->pdgId()) == 11 || pfcand->pdgId() == 22) && pfcand->gsfTrackRef().isNonnull() && pfcand->gsfTrackRef().isAvailable() )
           return reco::TrackBaseRef(pfcand->gsfTrackRef());
         else if ( pfcand->trackRef().isNonnull() && pfcand->trackRef().isAvailable() )
@@ -199,7 +199,7 @@ public:
   typedef typename edm::Ref<std::vector<reco::Track> > TrackRefCalo;
   typedef VTX Vertex;
   typedef reco::TemplatedSecondaryVertexTagInfo<IPTI,VTX> SVTagInfo;
-  
+
 
 private:
   virtual void beginJob() ;
@@ -222,11 +222,11 @@ private:
   bool processTrig(const edm::Handle<edm::TriggerResults>&, const std::vector<std::string>&) ;
 
   template<typename JetColl, typename SVColl>
-  void processHLTJets(const edm::Handle<JetColl>&,  const edm::EDGetTokenT<ShallowTagCollection>&,  const edm::EDGetTokenT<std::vector<SVColl> >&, 
+  void processHLTJets(const edm::Handle<JetColl>&,  const edm::EDGetTokenT<ShallowTagCollection>&,  const edm::EDGetTokenT<std::vector<SVColl> >&,
 		      const edm::EDGetTokenT<HLTBTagValue>&, const edm::EDGetTokenT<HLTBTagValue>&,
 		      const edm::Event&, const edm::EventSetup&, const int) ;
 
-  void processHLTPFJets(const edm::Handle<PFJetCollection>&, const edm::EDGetTokenT<ShallowTagCollection>&, 
+  void processHLTPFJets(const edm::Handle<PFJetCollection>&, const edm::EDGetTokenT<ShallowTagCollection>&,
 			const edm::EDGetTokenT<HLTBTagValue>&, const edm::EDGetTokenT<HLTBTagValue>&,
 			const edm::Event&, const edm::EventSetup&, const int) ;
 
@@ -238,11 +238,11 @@ private:
   edm::EDGetTokenT<edm::TriggerResults> triggerTable_;
 
   std::string   branchNamePrefix_;
-  edm::EDGetTokenT<CaloJetCollection> CaloJetCollectionTag_;
-  edm::EDGetTokenT<ShallowTagCollection> CaloJetTagCollectionTag_;
-  edm::EDGetTokenT<std::vector<reco::SecondaryVertexTagInfo> > CaloSVCollectionTag_;
-  edm::EDGetTokenT<HLTBTagValue> CaloJetCSVTag_;
-  edm::EDGetTokenT<HLTBTagValue> CaloJetDeepCSVTag_;
+  // edm::EDGetTokenT<CaloJetCollection> CaloJetCollectionTag_;
+  // edm::EDGetTokenT<ShallowTagCollection> CaloJetTagCollectionTag_;
+  // edm::EDGetTokenT<std::vector<reco::SecondaryVertexTagInfo> > CaloSVCollectionTag_;
+  // edm::EDGetTokenT<HLTBTagValue> CaloJetCSVTag_;
+  // edm::EDGetTokenT<HLTBTagValue> CaloJetDeepCSVTag_;
 
   edm::EDGetTokenT<PFJetCollection> PFJetCollectionTag_;
   edm::EDGetTokenT<ShallowTagCollection> PFJetTagCollectionTag_;
@@ -332,11 +332,11 @@ BTagHLTAnalyzerT<IPTI,VTX>::BTagHLTAnalyzerT(const edm::ParameterSet& iConfig):
 
 //
 //  branchNamePrefix_ = iConfig.getParameter<std::string>("BranchNamePrefix");
-  CaloJetCollectionTag_ = consumes<CaloJetCollection>(iConfig.getParameter<edm::InputTag>("CaloJets"));
-  CaloJetTagCollectionTag_ = consumes<ShallowTagCollection>(iConfig.getParameter<edm::InputTag>("CaloJetTags"));
-  CaloSVCollectionTag_   = consumes<std::vector<reco::SecondaryVertexTagInfo> >(iConfig.getParameter<edm::InputTag>("CaloSVs"));
-  CaloJetCSVTag_ = consumes<HLTBTagValue>(iConfig.getParameter<edm::InputTag>("CaloJetCSVTags"));
-  CaloJetDeepCSVTag_ = consumes<HLTBTagValue>(iConfig.getParameter<edm::InputTag>("CaloJetDeepCSVTags"));
+  // CaloJetCollectionTag_ = consumes<CaloJetCollection>(iConfig.getParameter<edm::InputTag>("CaloJets"));
+  // CaloJetTagCollectionTag_ = consumes<ShallowTagCollection>(iConfig.getParameter<edm::InputTag>("CaloJetTags"));
+  // CaloSVCollectionTag_   = consumes<std::vector<reco::SecondaryVertexTagInfo> >(iConfig.getParameter<edm::InputTag>("CaloSVs"));
+  // CaloJetCSVTag_ = consumes<HLTBTagValue>(iConfig.getParameter<edm::InputTag>("CaloJetCSVTags"));
+  // CaloJetDeepCSVTag_ = consumes<HLTBTagValue>(iConfig.getParameter<edm::InputTag>("CaloJetDeepCSVTags"));
 
   PFJetCollectionTag_   = consumes<PFJetCollection>(iConfig.getParameter<edm::InputTag>("PFJets"));
   PFJetTagCollectionTag_ = consumes<ShallowTagCollection>(iConfig.getParameter<edm::InputTag>("PFJetTags"));
@@ -365,7 +365,7 @@ BTagHLTAnalyzerT<IPTI,VTX>::BTagHLTAnalyzerT(const edm::ParameterSet& iConfig):
   // jet information
   //--------------------------------------
   JetInfo.reserve(2);
-  JetInfo[0].RegisterBranches(smalltree, variableParser, "CaloJet");
+  // JetInfo[0].RegisterBranches(smalltree, variableParser, "CaloJet");
   JetInfo[1].RegisterBranches(smalltree, variableParser, "PFJet");
 
 }
@@ -397,10 +397,14 @@ void BTagHLTAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Ev
 
   isData_ = iEvent.isRealData();
 
+
+
   if ( !isData_ && EventInfo.Run > 0 ) EventInfo.Run = -EventInfo.Run;
 
   EventInfo.Evt  = iEvent.id().event();
   EventInfo.LumiBlock  = iEvent.luminosityBlock();
+
+  std::cout<<iEvent.id().event()<<std::endl;
 
   //------------------
   // Primary vertex
@@ -462,21 +466,21 @@ void BTagHLTAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Ev
 											  << triggerList.size() << "," << trigRes->size() ;
 
   bool passTrig = processTrig(trigRes, triggerList);
-  if(!passTrig) return;
+  // if(!passTrig) return;
 
   //------------------------------------------------------
   // Jet info
   //------------------------------------------------------
   int iJetColl = 0 ;
 
-  edm::Handle <CaloJetCollection> caloJetsColl;
-  iEvent.getByToken (CaloJetCollectionTag_, caloJetsColl);
-  bool havePassingCaloJet = havePassingJets<CaloJetCollection>(caloJetsColl);
-  
-  if(havePassingCaloJet){
-    processHLTJets<CaloJetCollection, reco::SecondaryVertexTagInfo>(caloJetsColl, CaloJetTagCollectionTag_, CaloSVCollectionTag_, CaloJetCSVTag_, CaloJetDeepCSVTag_, iEvent, iSetup, iJetColl);
-  }
-  
+  // edm::Handle <CaloJetCollection> caloJetsColl;
+  // iEvent.getByToken (CaloJetCollectionTag_, caloJetsColl);
+  // bool havePassingCaloJet = havePassingJets<CaloJetCollection>(caloJetsColl);
+  //
+  // if(havePassingCaloJet){
+  //   processHLTJets<CaloJetCollection, reco::SecondaryVertexTagInfo>(caloJetsColl, CaloJetTagCollectionTag_, CaloSVCollectionTag_, CaloJetCSVTag_, CaloJetDeepCSVTag_, iEvent, iSetup, iJetColl);
+  // }
+
   //
   // Increment Jet Collection
   //
@@ -487,7 +491,7 @@ void BTagHLTAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Ev
   bool havePassingPFJet = havePassingJets<PFJetCollection>(pfJetsColl);
 
   if(havePassingPFJet){
-    processHLTPFJets(pfJetsColl, PFJetTagCollectionTag_, PFJetCSVTag_, PFJetDeepCSVTag_, iEvent, iSetup, iJetColl); 
+    processHLTPFJets(pfJetsColl, PFJetTagCollectionTag_, PFJetCSVTag_, PFJetDeepCSVTag_, iEvent, iSetup, iJetColl);
   }
 
 
@@ -504,7 +508,7 @@ bool BTagHLTAnalyzerT<IPTI,VTX>::processTrig(const edm::Handle<edm::TriggerResul
   bool passTrig = false;
   for (unsigned int i = 0; i < trigRes->size(); ++i) {
 
-    if ( !trigRes->at(i).accept() ) continue;
+    // if ( !trigRes->at(i).accept() ) continue;
 
 
     for (std::vector<std::string>::const_iterator itTrigPathNames = triggerPathNames_.begin();
@@ -528,7 +532,7 @@ bool BTagHLTAnalyzerT<IPTI,VTX>::processTrig(const edm::Handle<edm::TriggerResul
 
 template<typename IPTI,typename VTX>
 template<typename JetColl, typename SVColl>
-void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jetsColl, const edm::EDGetTokenT<ShallowTagCollection>& jetTagsCollToken, const edm::EDGetTokenT<std::vector<SVColl> >& svCollToken, 
+void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jetsColl, const edm::EDGetTokenT<ShallowTagCollection>& jetTagsCollToken, const edm::EDGetTokenT<std::vector<SVColl> >& svCollToken,
 						const edm::EDGetTokenT<HLTBTagValue>& CSVToken, const edm::EDGetTokenT<HLTBTagValue>& deepCSVToken,
 						const edm::Event& iEvent, const edm::EventSetup& iSetup, const int iJetColl)
 {
@@ -617,10 +621,10 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
 	  // per jet per track
           JetInfo[iJetColl].Jet_nFirstTrkTagVar[JetInfo[iJetColl].nJet] = JetInfo[iJetColl].nTrkTagVar;
 	  JetInfo[iJetColl].Jet_ntracks[JetInfo[iJetColl].nJet] = nTracks;
-	  
+
 	  JetInfo[iJetColl].TagVar_jetNTracks[JetInfo[iJetColl].nJet]                  = nTracks;
 	  JetInfo[iJetColl].TagVar_jetNSecondaryVertices[JetInfo[iJetColl].nJet]       = nSVs;
-    
+
 	  //std::cout << "Filling jet-level " << std::endl;
 	  //std::cout << tagVars.getList(reco::btau::trackSumJetEtRatio,false).size() << std::endl;
 	  if(tagVars.getList(reco::btau::trackSumJetEtRatio,false).size())
@@ -717,7 +721,7 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
 	  JetInfo[iJetColl].nSVTagVar += nSVs;
 	  JetInfo[iJetColl].Jet_nLastSVTagVar[JetInfo[iJetColl].nJet] = JetInfo[iJetColl].nSVTagVar;
 
-    
+
 	}// Matched TagInfo
       }// Loop on ShalowTags
 
@@ -745,14 +749,14 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
 	  JetInfo[iJetColl].Jet_ntracks[JetInfo[iJetColl].nJet] = trackSize;
 
 	  for (unsigned int itt=0; itt < trackSize; ++itt){
-	    const auto ptrackRef = (ipInfo.selectedTracks()[itt]); //TrackRef or 
+	    const auto ptrackRef = (ipInfo.selectedTracks()[itt]); //TrackRef or
 	    const reco::TrackBaseRef ptrackBaseRef = BTagHLT::toTrackRef(ptrackRef);
 	    const reco::Track * ptrackPtr = reco::btag::toTrack(ptrackRef);
 	    const reco::Track & ptrack = *ptrackPtr;
 
 	    reco::TransientTrack transientTrack = trackBuilder->build(ptrackRef);
 	    GlobalVector direction(jet->px(), jet->py(), jet->pz());
-	    
+
 	    //--------------------------------
 	    Double_t decayLength=-1;
 	    TrajectoryStateOnSurface closest = IPTools::closestApproachToJet(transientTrack.impactPointState(), *pv, direction, transientTrack.field());
@@ -760,12 +764,12 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
 	      decayLength =  (closest.globalPosition() - RecoVertex::convertPos(pv->position())).mag();
 	    else
 	      decayLength = -1;
-	    
+
 	    Double_t distJetAxis =  IPTools::jetTrackDistance(transientTrack, direction, *pv).second.value();
-	    
+
 	    JetInfo[iJetColl].Track_dist[JetInfo[iJetColl].nTrack]     = distJetAxis;
 	    JetInfo[iJetColl].Track_length[JetInfo[iJetColl].nTrack]   = decayLength;
-	    
+
 	    JetInfo[iJetColl].Track_dxy[JetInfo[iJetColl].nTrack]      = ptrack.dxy(pv->position());
 	    JetInfo[iJetColl].Track_dz[JetInfo[iJetColl].nTrack]       = ptrack.dz(pv->position());
 	    JetInfo[iJetColl].Track_dxyError[JetInfo[iJetColl].nTrack]      = ptrack.dxyError();
@@ -806,9 +810,9 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
 
 	    float deltaR = reco::deltaR( ptrackRef->eta(), ptrackRef->phi(),
 					 JetInfo[iJetColl].Jet_eta[JetInfo[iJetColl].nJet], JetInfo[iJetColl].Jet_phi[JetInfo[iJetColl].nJet] );
-	    
+
 	    bool pass_cut_trk = false;
-	    //if (std::fabs(distJetAxis) < _distJetAxis && decayLength < _decayLength) 
+	    //if (std::fabs(distJetAxis) < _distJetAxis && decayLength < _decayLength)
 
 	    if (std::fabs(distJetAxis) < distJetAxis_ && decayLength < decayLength_ && deltaR < deltaR_){
 	      pass_cut_trk = true;
@@ -823,14 +827,14 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
               JetInfo[iJetColl].Track_IP2Derr[JetInfo[iJetColl].nTrack]  = ipInfo.impactParameterData()[itt].ip2d.error();
               JetInfo[iJetColl].Track_IPerr[JetInfo[iJetColl].nTrack]    = ipInfo.impactParameterData()[itt].ip3d.error();
               JetInfo[iJetColl].Track_Proba[JetInfo[iJetColl].nTrack]    = ipInfo.probabilities(0)[itt];
-        
+
               JetInfo[iJetColl].Track_p[JetInfo[iJetColl].nTrack]        = ptrack.p();
               JetInfo[iJetColl].Track_pt[JetInfo[iJetColl].nTrack]       = ptrack.pt();
               JetInfo[iJetColl].Track_eta[JetInfo[iJetColl].nTrack]      = ptrack.eta();
               JetInfo[iJetColl].Track_phi[JetInfo[iJetColl].nTrack]      = ptrack.phi();
               JetInfo[iJetColl].Track_chi2[JetInfo[iJetColl].nTrack]     = ptrack.normalizedChi2();
               JetInfo[iJetColl].Track_charge[JetInfo[iJetColl].nTrack]   = ptrack.charge();
-        
+
               JetInfo[iJetColl].Track_nHitAll[JetInfo[iJetColl].nTrack]  = ptrack.numberOfValidHits();
               JetInfo[iJetColl].Track_nHitPixel[JetInfo[iJetColl].nTrack]= ptrack.hitPattern().numberOfValidPixelHits();
               JetInfo[iJetColl].Track_nHitStrip[JetInfo[iJetColl].nTrack]= ptrack.hitPattern().numberOfValidStripHits();
@@ -844,7 +848,7 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
 
               JetInfo[iJetColl].Track_algo[JetInfo[iJetColl].nTrack]  = ptrack.algo();
               JetInfo[iJetColl].Track_originalAlgo[JetInfo[iJetColl].nTrack]  = ptrack.originalAlgo();
-	      
+
 
 	      setTracksPVBase(ptrack, primaryVertex,
 			      JetInfo[iJetColl].Track_PV[JetInfo[iJetColl].nTrack],
@@ -863,17 +867,17 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
 
 	      // check if the track is a V0 decay product candidate
 	      JetInfo[iJetColl].Track_isfromV0[JetInfo[iJetColl].nTrack] = 0;
-	      
+
 	      // apply the V0 filter
 	      std::vector<const reco::Track*> trackPairV0Test(2);
 	      trackPairV0Test[0] = ptrackPtr;
 	      for (unsigned int jtt=0; jtt < trackSize; ++jtt){
 	      	if (itt == jtt) continue;
-	      	  
+
 	      	const auto pairTrackRef = (ipInfo.selectedTracks()[jtt]);
 		const reco::Track * pairTrackPtr = reco::btag::toTrack(pairTrackRef);
 	      	trackPairV0Test[1] = pairTrackPtr;
-	      	
+
 	      	if (!trackPairV0Filter(trackPairV0Test))
 	      	  {
 	      	    JetInfo[iJetColl].Track_isfromV0[JetInfo[iJetColl].nTrack] = 1;
@@ -895,14 +899,14 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
 	  JetInfo[iJetColl].Jet_nseltracks[JetInfo[iJetColl].nJet] = nseltracks;
 
 
-	  // 
+	  //
 	  // SV
 	  //
 	  JetInfo[iJetColl].Jet_nFirstSV[JetInfo[iJetColl].nJet]  = JetInfo[iJetColl].nSV;
 	  JetInfo[iJetColl].Jet_SV_multi[JetInfo[iJetColl].nJet]  = svTagInfo.nVertices();
 
 	  for (size_t vtx = 0; vtx < (size_t)svTagInfo.nVertices(); ++vtx) {
-	    
+
 	    JetInfo[iJetColl].SV_x[JetInfo[iJetColl].nSV]    = BTagHLT::position(svTagInfo.secondaryVertex(vtx)).x();
 	    JetInfo[iJetColl].SV_y[JetInfo[iJetColl].nSV]    = BTagHLT::position(svTagInfo.secondaryVertex(vtx)).y();
 	    JetInfo[iJetColl].SV_z[JetInfo[iJetColl].nSV]    = BTagHLT::position(svTagInfo.secondaryVertex(vtx)).z();
@@ -911,27 +915,27 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
 	    JetInfo[iJetColl].SV_ez[JetInfo[iJetColl].nSV]   = BTagHLT::zError(svTagInfo.secondaryVertex(vtx));
 	    JetInfo[iJetColl].SV_chi2[JetInfo[iJetColl].nSV] = BTagHLT::chi2(svTagInfo.secondaryVertex(vtx));
 	    JetInfo[iJetColl].SV_ndf[JetInfo[iJetColl].nSV]  = BTagHLT::ndof(svTagInfo.secondaryVertex(vtx));
-	    
+
 	    JetInfo[iJetColl].SV_flight[JetInfo[iJetColl].nSV]      = svTagInfo.flightDistance(vtx).value();
 	    JetInfo[iJetColl].SV_flightErr[JetInfo[iJetColl].nSV]   = svTagInfo.flightDistance(vtx).error();
 	    JetInfo[iJetColl].SV_flight2D[JetInfo[iJetColl].nSV]    = svTagInfo.flightDistance(vtx, true).value();
 	    JetInfo[iJetColl].SV_flight2DErr[JetInfo[iJetColl].nSV] = svTagInfo.flightDistance(vtx, true).error();
 	    JetInfo[iJetColl].SV_nTrk[JetInfo[iJetColl].nSV]        = BTagHLT::vtxTracks(svTagInfo.secondaryVertex(vtx));
-	    
+
 	    JetInfo[iJetColl].SV_vtx_pt[JetInfo[iJetColl].nSV]  = svTagInfo.secondaryVertex(vtx).p4().pt();
 	    JetInfo[iJetColl].SV_vtx_eta[JetInfo[iJetColl].nSV] = svTagInfo.secondaryVertex(vtx).p4().eta();
 	    JetInfo[iJetColl].SV_vtx_phi[JetInfo[iJetColl].nSV] = svTagInfo.secondaryVertex(vtx).p4().phi();
 	    JetInfo[iJetColl].SV_mass[JetInfo[iJetColl].nSV]    = svTagInfo.secondaryVertex(vtx).p4().mass();
-	    
+
 	    Int_t totcharge=0;
 	    reco::TrackKinematics vertexKinematics;
-	    
+
 	    // get the vertex kinematics and charge
 	    vertexKinematicsAndChange(svTagInfo.secondaryVertex(vtx), vertexKinematics, totcharge);
-	    
+
 	    // total charge at the secondary vertex
 	    JetInfo[iJetColl].SV_totCharge[JetInfo[iJetColl].nSV]=totcharge;
-	    
+
 	    math::XYZTLorentzVector vertexSum = vertexKinematics.weightedVectorSum();
 	    edm::RefToBase<reco::Jet> jet = ipInfo.jet();
 	    math::XYZVector jetDir = jet->momentum().Unit();
@@ -952,24 +956,24 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
 	    Line jetline(pos2,dir2);
 	    // now compute the distance between the two lines
 	    JetInfo[iJetColl].SV_vtxDistJetAxis[JetInfo[iJetColl].nSV] = (jetline.distance(trackline)).mag();
-	    
+
 	    JetInfo[iJetColl].SV_EnergyRatio[JetInfo[iJetColl].nSV]= vertexSum.E() / allSum.E();
 	    JetInfo[iJetColl].SV_dir_x[JetInfo[iJetColl].nSV]= flightDir.x();
 	    JetInfo[iJetColl].SV_dir_y[JetInfo[iJetColl].nSV]= flightDir.y();
 	    JetInfo[iJetColl].SV_dir_z[JetInfo[iJetColl].nSV]= flightDir.z();
-	    
+
 	    ++JetInfo[iJetColl].nSV;
 	  }//loop on seconday vertices
-	  
+
 	  JetInfo[iJetColl].Jet_nLastSV[JetInfo[iJetColl].nJet] = JetInfo[iJetColl].nSV;
 
-	  
-	  
-	  
-	}// matched SV TagInfo
-      }// Loop over SV TagInfos    
 
-    
+
+
+	}// matched SV TagInfo
+      }// Loop over SV TagInfos
+
+
 
     }//runHLTJetVariables
 
@@ -984,7 +988,7 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
 
 
 template<typename IPTI,typename VTX>
-void BTagHLTAnalyzerT<IPTI,VTX>::processHLTPFJets(const edm::Handle<PFJetCollection>& jetsColl, const edm::EDGetTokenT<ShallowTagCollection>& jetTagsCollToken, 
+void BTagHLTAnalyzerT<IPTI,VTX>::processHLTPFJets(const edm::Handle<PFJetCollection>& jetsColl, const edm::EDGetTokenT<ShallowTagCollection>& jetTagsCollToken,
 						  const edm::EDGetTokenT<HLTBTagValue>& CSVToken, const edm::EDGetTokenT<HLTBTagValue>& deepCSVToken,
 						  const edm::Event& iEvent, const edm::EventSetup& iSetup, const int iJetColl)
 {
@@ -996,7 +1000,7 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTPFJets(const edm::Handle<PFJetCollect
 
     double ptjet  = jet->pt()  ;
     double etajet = jet->eta() ;
-    
+
     if( ptjet < minJetPt_ || std::fabs( etajet ) > maxJetEta_ ) continue;
 
     if(runHLTJetVariables_){
@@ -1181,7 +1185,7 @@ void BTagHLTAnalyzerT<IPTI,VTX>::setTracksSV(const TrackRef & trackRef, const SV
   {
     const Vertex & vtx = svTagInfo->secondaryVertex(iv);
     const std::vector<reco::CandidatePtr> & tracks = vtx.daughterPtrVector();
-    
+
     auto trackMatch = std::find(tracks.begin(),tracks.end(),trackRef);
     // one of the tracks in the vertex is the same as the track considered in the function
     if( trackMatch != tracks.end() )
