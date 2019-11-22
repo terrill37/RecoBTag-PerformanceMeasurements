@@ -117,6 +117,7 @@ for i in range(0, nJobs):
     tmp_job.write("eval `scram runtime -sh`\n")
     tmp_job.write("cd -\n")
     tmp_job.write("cp -f %s/hlt_tmp.py .\n"%(jobDir))
+    # tmp_job.write("cmsRun hlt_tmp.py groups=\"HLTEventInfo,HLTJetInfo,HLTTagVar,HLTJetTrack,HLTJetSV,HLTCSVTagVar\" runOnData=False maxEvents=200 \n")
     tmp_job.write("cmsRun hlt_tmp.py\n")
     tmp_job.write("echo 'sending the file back'\n")
     tmp_job.write("cp hltoutput_hlt.root %s/hlt_%s.root\n"%(remoteDir, str(i)))
