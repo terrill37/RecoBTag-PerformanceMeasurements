@@ -57,7 +57,7 @@ except:
     pass
 
 
-sub_total = open("sub_total_HLT.jobb","w")
+sub_total = open("sub_total.jobb","w")
 
 
 # load cfg script
@@ -153,8 +153,8 @@ condor_str += "request_memory = 4 GB\n"
 condor_str += '+JobFlavour = "%s"\n'%opts.jobFlavour
 #condor_str += "queue filename matching ("+MYDIR+"/Jobs/Job_*/*.sh)"
 condor_str += "queue filename matching ("+MYDIR+"/"+opts.jobsDir+"/Job_*/*.sh)"
-condor_name = MYDIR+"/condor_cluster_HLT.sub"
+condor_name = MYDIR+"/condor_cluster.sub"
 condor_file = open(condor_name, "w")
 condor_file.write(condor_str)
 sub_total.write("condor_submit %s\n"%condor_name)
-os.system("chmod +x sub_total_HLT.jobb")
+os.system("chmod +x sub_total.jobb")
