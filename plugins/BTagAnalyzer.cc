@@ -1758,7 +1758,7 @@ void BTagAnalyzerT<IPTI,VTX>::processTrig(const edm::Handle<edm::TriggerResults>
 {
   for (unsigned int i = 0; i < trigRes->size(); ++i) {
 
-    if ( !trigRes->at(i).accept() ) continue;
+    // if ( !trigRes->at(i).accept() ) continue;
 
 
     for (std::vector<std::string>::const_iterator itTrigPathNames = triggerPathNames_.begin();
