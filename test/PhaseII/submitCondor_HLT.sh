@@ -3,8 +3,9 @@ DIR1="Phase2_HLT_output"
 WORKDIR="/afs/cern.ch/work/s/sewuchte/private/BTag_Upgrade/new/CMSSW_11_0_0_pre7/src/RecoBTag/PerformanceMeasurements/test/PhaseII/"
 OUTDIR="/eos/home-s/sewuchte/BTV/PhaseII/HLT/"
 PROXYPATH="/afs/cern.ch/user/s/sewuchte/.vomsproxy/x509"
+JOBFLAVOUR="tomorrow"
 
-./cmsCondor_HLT.py $CONFIG -n 1 -d $DIR1 $WORKDIR $OUTDIR -p $PROXYPATH
+./cmsCondor_HLT.py $CONFIG -n 1 -d $DIR1 $WORKDIR $OUTDIR -p $PROXYPATH -q $JOBFLAVOUR
 
 
 
