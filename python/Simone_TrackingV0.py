@@ -501,7 +501,8 @@ process.HLTOutput = cms.EndPath( process.hltOutput )
 
 # load the DQMStore and DQMRootOutputModule
 process.load( "DQMServices.Core.DQMStore_cfi" )
-process.DQMStore.enableMultiThread = True
+# process.DQMStore.enableMultiThread = True
+# process.DQMStore.enableMultiThread = True
 
 
 # configure the FastTimerService
@@ -550,8 +551,8 @@ process.FastTimerService.enableDQMbyProcesses      = False
 process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool( True )
 )
-process.options.numberOfStreams = cms.untracked.uint32(4)
-process.options.numberOfThreads = cms.untracked.uint32(4)
+# process.options.numberOfStreams = cms.untracked.uint32(4)
+# process.options.numberOfThreads = cms.untracked.uint32(4)
 
 
 # FastTimerService client
