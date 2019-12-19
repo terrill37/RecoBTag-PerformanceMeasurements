@@ -31,7 +31,8 @@ hltVerticesPF = cms.EDProducer("PrimaryVertexProducer",
         trackQuality = cms.string('any')
     ),
     # TrackLabel = cms.InputTag("hltPFMuonMerging"),
-    TrackLabel = cms.InputTag("earlyGeneralTracks"),
+    # TrackLabel = cms.InputTag("earlyGeneralTracks"),
+    TrackLabel = cms.InputTag("generalTracks"),
     beamSpotLabel = cms.InputTag("hltOnlineBeamSpot"),
     verbose = cms.untracked.bool(False),
     vertexCollections = cms.VPSet(
