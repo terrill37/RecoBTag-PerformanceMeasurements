@@ -76,6 +76,9 @@ class MyTrackAnalyzer : public edm::EDAnalyzer {
       edm::Service<TFileService> fs;
       edm::EDGetTokenT<std::vector<reco::Track>> inputTracksToken_;
 
+      TH1D *hTrackPt_outer;
+      TH1D *hTrackEta_outer;
+      TH1D *hTrackPhi_outer;
       TH1D *hTrackPt;
       TH1D *hTrackEta;
       TH1D *hTrackPhi;
@@ -95,6 +98,9 @@ class MyTrackAnalyzer : public edm::EDAnalyzer {
 MyTrackAnalyzer::MyTrackAnalyzer(const edm::ParameterSet& iConfig):
 inputTracksToken_(consumes<std::vector<reco::Track>>(iConfig.getParameter<edm::InputTag>("tracks")))
 {
+   hTrackEta_outer = fs->make<TH1D>("hTrackEta_outer","Track Eta_outer", 500, -5., 5.);
+   hTrackPt_outer = fs->make<TH1D>("hTrackPt_outer","Track Pt_outer", 500, 0, 5.);
+   hTrackPhi_outer = fs->make<TH1D>("hTrackPhi_outer","Track Phi_outer", 600, -3., 3.);
    hTrackEta = fs->make<TH1D>("hTrackEta","Track Eta", 500, -5., 5.);
    hTrackPt = fs->make<TH1D>("hTrackPt","Track Pt", 500, 0, 5.);
    hTrackPhi = fs->make<TH1D>("hTrackPhi","Track Phi", 600, -3., 3.);
@@ -119,9 +125,12 @@ MyTrackAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     edm::Handle<std::vector<reco::Track>> tracks;
     iEvent.getByToken(inputTracksToken_, tracks);
     for(std::vector<reco::Track>::const_iterator i_track = tracks->begin(); i_track != tracks->end(); ++i_track){
-        hTrackEta->Fill(i_track->outerEta());
-        hTrackPt->Fill(i_track->outerPt());
-        hTrackPhi->Fill(i_track->outerPhi());
+        hTrackEta_outer->Fill(i_track->outerEta());
+        hTrackPt_outer->Fill(i_track->outerPt());
+        hTrackPhi_outer->Fill(i_track->outerPhi());
+        hTrackEta->Fill(i_track->eta());
+        hTrackPt->Fill(i_track->pt());
+        hTrackPhi->Fill(i_track->phi());
     }
 }
 
