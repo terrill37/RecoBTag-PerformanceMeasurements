@@ -1,15 +1,16 @@
 ### configuration file to re-run customized HLT Menu on RAW
 
 # use the following two lines for tracking V0 setup
-# from RecoBTag.PerformanceMeasurements.Simone_TrackingV0 import cms, process
-# process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_cff")
+from RecoBTag.PerformanceMeasurements.Simone_TrackingV0 import cms, process
+process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_cff")
 
 # use the following two lines for tracking V2 setup
-from RecoBTag.PerformanceMeasurements.Simone_TrackingV2 import cms, process
-process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_trackV2PF_cff")
+# from RecoBTag.PerformanceMeasurements.Simone_TrackingV2 import cms, process
+# process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_trackV2PF_cff")
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
+    # input = cms.untracked.int32(250)
 )
 
 
@@ -19,9 +20,9 @@ process.source = cms.Source("PoolSource",
     # "root://xrootd-cms.infn.it//store/mc/PhaseIITDRSpring19MiniAOD/TTbar_14TeV_TuneCP5_Pythia8/MINIAODSIM/PU200_106X_upgrade2023_realistic_v3_ext1-v3/60000/F0225E24-F876-D448-8318-2D89795D632F.root",
     # "root://xrootd-cms.infn.it//store/mc/PhaseIITDRSpring19DR/QCD_Pt_50to80_TuneCP5_14TeV_pythia8/GEN-SIM-DIGI-RAW/PU200_106X_upgrade2023_realistic_v3-v1/10000/19286DB0-FDED-5A4D-B5F9-4FCDB39A99CE.root",
     #"root://xrootd-cms.infn.it//store/mc/PhaseIITDRSpring19DR/QCD_Pt-15to3000_EMEnriched_TuneCP5_13TeV_pythia8/GEN-SIM-DIGI-RAW/PU200_106X_upgrade2023_realistic_v3-v1/50000/BBB89FE4-5C9D-7842-BDE3-C89FF77630B6.root",
-# "file:/eos/cms/store/mc/PhaseIITDRSpring19DR/TTbar_14TeV_TuneCP5_Pythia8/GEN-SIM-DIGI-RAW/PU200_106X_upgrade2023_realistic_v3_ext1-v3/60000/A7DE6079-B3AE-4743-A5F3-2050EDEB8383.root"
+"file:/eos/cms/store/mc/PhaseIITDRSpring19DR/TTbar_14TeV_TuneCP5_Pythia8/GEN-SIM-DIGI-RAW/PU200_106X_upgrade2023_realistic_v3_ext1-v3/60000/A7DE6079-B3AE-4743-A5F3-2050EDEB8383.root"
 # "/TTbar_14TeV_TuneCP5_Pythia8/PhaseIITDRSpring19DR-PU200_106X_upgrade2023_realistic_v3_ext1-v3/GEN-SIM-DIGI-RAW"
-"root://xrootd-cms.infn.it//store/mc/PhaseIITDRSpring19DR/TTbar_14TeV_TuneCP5_Pythia8/GEN-SIM-DIGI-RAW/PU200_106X_upgrade2023_realistic_v3_ext1-v3/60000/EB1607A3-B053-1E42-B9C5-418657AD9E2A.root",
+# "root://xrootd-cms.infn.it//store/mc/PhaseIITDRSpring19DR/TTbar_14TeV_TuneCP5_Pythia8/GEN-SIM-DIGI-RAW/PU200_106X_upgrade2023_realistic_v3_ext1-v3/60000/EB1607A3-B053-1E42-B9C5-418657AD9E2A.root",
 ),
     secondaryFileNames = cms.untracked.vstring()
 )
@@ -58,26 +59,26 @@ process.reconstruction_step = cms.Path(process.reconstruction)
 process.noFilter_PFDeepCSV = cms.Path(process.HLTBtagDeepCSVSequencePF)
 
 
-process.hltOutput = cms.OutputModule( "PoolOutputModule",
-     fileName = cms.untracked.string( "hltoutput_hlt.root" ),
-     fastCloning = cms.untracked.bool( False ),
-     outputCommands = cms.untracked.vstring(
-        'drop *',
-        # 'keep *_particleFlowTmp*_*_*',
-         # 'keep *_ak4PFJets*_*_*',
-         # 'keep *_ak4PFJets*_*_RECO',
-         # 'keep *_ak4GenJets_*_HLT',
-        'keep *_hltDeepCombinedSecondaryVertexBJetTagsInfos_*_*',
-        # # 'keep *_hltDeepCombinedSecondaryVertexBJetTagsInfosCalo_*_*',
-        'keep *_hltDeepCombinedSecondaryVertexBJetTagsPF*_*_*',
-         )
-     )
+# process.hltOutput = cms.OutputModule( "PoolOutputModule",
+#      fileName = cms.untracked.string( "hltoutput_hlt.root" ),
+#      fastCloning = cms.untracked.bool( False ),
+#      outputCommands = cms.untracked.vstring(
+#         'drop *',
+#         # 'keep *_particleFlowTmp*_*_*',
+#          # 'keep *_ak4PFJets*_*_*',
+#          # 'keep *_ak4PFJets*_*_RECO',
+#          # 'keep *_ak4GenJets_*_HLT',
+#         'keep *_hltDeepCombinedSecondaryVertexBJetTagsInfos_*_*',
+#         # # 'keep *_hltDeepCombinedSecondaryVertexBJetTagsInfosCalo_*_*',
+#         'keep *_hltDeepCombinedSecondaryVertexBJetTagsPF*_*_*',
+#          )
+#      )
 
-#~ process.DQMStore.enableMultiThread = True
+# process.DQMStore.enableMultiThread = True
 process.DQMStore.enableMultiThread = False
 
-#~ process.options.numberOfStreams = cms.untracked.uint32(4)
-#~ process.options.numberOfThreads = cms.untracked.uint32(4)
+# process.options.numberOfStreams = cms.untracked.uint32(4)
+# process.options.numberOfThreads = cms.untracked.uint32(4)
 process.options.numberOfStreams = cms.untracked.uint32(1)
 process.options.numberOfThreads = cms.untracked.uint32(1)
 
@@ -206,9 +207,9 @@ from RecoBTag.PerformanceMeasurements.eventcounter_cfi import eventCounter
 process.allEvents = eventCounter.clone()
 process.selectedEvents = eventCounter.clone()
 #---------------------------------------
-
-
-
+from RecoBTag.PerformanceMeasurements.myTrackAnalyzer_cfi import myTrackAnalyzer
+process.trackAnalyzer = myTrackAnalyzer.clone()
+process.trackAnalyzer.tracks = cms.InputTag('generalTracks')
 
 ## Define analyzer sequence
 process.analyzerSeq = cms.Sequence(process.btagana)
@@ -220,6 +221,7 @@ process.p = cms.Path(
     #* process.filtSeq
     * process.selectedEvents
     # * process.analyzerSeq
+    * process.trackAnalyzer
 )
 
 
