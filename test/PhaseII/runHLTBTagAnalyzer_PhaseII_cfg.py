@@ -122,7 +122,7 @@ for requiredGroup in groups:
 
 # print "Running on data: %s"%('True' if options.runOnData else 'False')
 # print "Running with globalTag: %s"%(options.globalTag)
-print "Running with globalTag: %s"%("auto:phase2_realistic")
+print "Running with globalTag: %s"%("auto:phase2_realistic_T14")
 
 # trigresults='TriggerResults::HLT'
 # trigresults='TriggerResults'
