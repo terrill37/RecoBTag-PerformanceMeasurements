@@ -1,63 +1,150 @@
 ### configuration file to re-run customized HLT Menu on RAW
+###
+### command-line arguments
+###
+import FWCore.ParameterSet.VarParsing as vpo
+opts = vpo.VarParsing('analysis')
 
-# use the following two lines for tracking V0 setup
-# from RecoBTag.PerformanceMeasurements.Simone_TrackingV0 import cms, process
-# process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_cff")
+opts.register('skipEvents', 0,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.int,
+              'number of events to be skipped')
 
-# use the following two lines for tracking V2 setup
-from RecoBTag.PerformanceMeasurements.Simone_TrackingV2 import cms, process
-process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_trackV2PF_cff")
+opts.register('numThreads', 1,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.int,
+              'number of threads')
 
+opts.register('numStreams', 1,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.int,
+              'number of streams')
+
+opts.register('logs', False,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.bool,
+              'create log files configured via MessageLogger')
+
+opts.register('doTrackV0', False,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.bool,
+              'Use TrackingV0 instead of V2')
+
+opts.register('wantSummary', False,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.bool,
+              'show cmsRun summary at job completion')
+
+opts.register('dumpPython', None,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.string,
+              'Path to python file with content of cms.Process')
+
+opts.register('htrk', False,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.bool,
+              'added monitoring histograms for selected Tracks and Vertices')
+
+opts.parseArguments()
+
+if opts.doTrackV0:
+    # use the following two lines for tracking V0 setup
+    from RecoBTag.PerformanceMeasurements.step3_TrackingV0_11_0_0 import cms, process
+    process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_cff")
+else:
+    # use the following two lines for tracking V2 setup
+    from RecoBTag.PerformanceMeasurements.step3_TrackingV2_11_0_0 import cms, process
+    process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_trackV2_cff")
+
+
+# remove cms.EndPath for EDM output
 del process.HLTOutput
+
+# remove cms.EndPath for DQM output
 del process.DQMFileSaverOutput
 
-process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
-    # input = cms.untracked.int32(250)
+# reset path to EDM input files
+process.source.fileNames = []
+process.source.secondaryFileNames = []
+
+# process.maxEvents = cms.untracked.PSet(
+#     input = cms.untracked.int32(-1)
+# )
+
+
+
+###
+### Sequence for HLT(-like) AK4-{PF,Calo} Jets
+###
+process.ak4PFJetsCorrected.correctors = ['ak4PFL1FastL2L3Corrector']
+
+process.ak4CaloL1FastjetCorrector = cms.EDProducer('L1FastjetCorrectorProducer',
+  algorithm = cms.string('AK4Calo'),
+  level = cms.string('L1FastJet'),
+  srcRho = cms.InputTag('fixedGridRhoFastjetAll'),
 )
+process.ak4CaloL2RelativeCorrector = cms.EDProducer('LXXXCorrectorProducer',
+  algorithm = cms.string('AK4Calo'),
+  level = cms.string('L2Relative'),
+)
+process.ak4CaloL3AbsoluteCorrector = cms.EDProducer('LXXXCorrectorProducer',
+  algorithm = cms.string('AK4Calo'),
+  level = cms.string('L3Absolute'),
+)
+process.ak4CaloL1FastL2L3Corrector = cms.EDProducer('ChainedJetCorrectorProducer',
+  correctors = cms.VInputTag('ak4CaloL1FastjetCorrector', 'ak4CaloL2RelativeCorrector', 'ak4CaloL3AbsoluteCorrector'),
+)
+process.ak4CaloJetsCorrected = cms.EDProducer('CorrectedCaloJetProducer',
+  correctors = cms.VInputTag('ak4CaloL1FastL2L3Corrector'),
+  src = cms.InputTag('ak4CaloJets'),
+)
+process.ak4CaloJetsSeq = cms.Sequence(
+    process.ak4CaloL1FastjetCorrector
+  * process.ak4CaloL2RelativeCorrector
+  * process.ak4CaloL3AbsoluteCorrector
+  * process.ak4CaloL1FastL2L3Corrector
+  * process.ak4CaloJetsCorrected
+)
+process.reconstruction *= process.ak4CaloJetsSeq
+
 
 
 # Input source
-process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring(
-    # "root://xrootd-cms.infn.it//store/mc/PhaseIITDRSpring19MiniAOD/TTbar_14TeV_TuneCP5_Pythia8/MINIAODSIM/PU200_106X_upgrade2023_realistic_v3_ext1-v3/60000/F0225E24-F876-D448-8318-2D89795D632F.root",
-    # "root://xrootd-cms.infn.it//store/mc/PhaseIITDRSpring19DR/QCD_Pt_50to80_TuneCP5_14TeV_pythia8/GEN-SIM-DIGI-RAW/PU200_106X_upgrade2023_realistic_v3-v1/10000/19286DB0-FDED-5A4D-B5F9-4FCDB39A99CE.root",
-    #"root://xrootd-cms.infn.it//store/mc/PhaseIITDRSpring19DR/QCD_Pt-15to3000_EMEnriched_TuneCP5_13TeV_pythia8/GEN-SIM-DIGI-RAW/PU200_106X_upgrade2023_realistic_v3-v1/50000/BBB89FE4-5C9D-7842-BDE3-C89FF77630B6.root",
-"file:/eos/cms/store/mc/PhaseIITDRSpring19DR/TTbar_14TeV_TuneCP5_Pythia8/GEN-SIM-DIGI-RAW/PU200_106X_upgrade2023_realistic_v3_ext1-v3/60000/A7DE6079-B3AE-4743-A5F3-2050EDEB8383.root"
-# "/TTbar_14TeV_TuneCP5_Pythia8/PhaseIITDRSpring19DR-PU200_106X_upgrade2023_realistic_v3_ext1-v3/GEN-SIM-DIGI-RAW"
-# "root://xrootd-cms.infn.it//store/mc/PhaseIITDRSpring19DR/TTbar_14TeV_TuneCP5_Pythia8/GEN-SIM-DIGI-RAW/PU200_106X_upgrade2023_realistic_v3_ext1-v3/60000/EB1607A3-B053-1E42-B9C5-418657AD9E2A.root",
-),
-    secondaryFileNames = cms.untracked.vstring()
-)
-process.options = cms.untracked.PSet(
-)
+# process.source = cms.Source("PoolSource",
+#     fileNames = cms.untracked.vstring(
+# "file:/eos/cms/store/mc/PhaseIITDRSpring19DR/TTbar_14TeV_TuneCP5_Pythia8/GEN-SIM-DIGI-RAW/PU200_106X_upgrade2023_realistic_v3_ext1-v3/60000/A7DE6079-B3AE-4743-A5F3-2050EDEB8383.root"
+# ),
+#     secondaryFileNames = cms.untracked.vstring()
+# )
+# process.options = cms.untracked.PSet(
+# )
 
 
 #redefining reconstruction_step
-process.reconstruction = cms.Sequence(process.localreco+
-    process.globalreco
-    +process.particleFlowReco
-    +process.ak4PFJets
-    +process.fixedGridRhoFastjetAll
-    +process.ak4PFL1FastjetCorrector
-    +process.ak4PFJetsCorrected
-    +process.particleFlowPtrs
-    +process.goodOfflinePrimaryVertices
-    +process.pfPileUpJME
-    +process.pfNoPileUpJME
-    +process.ak4PFJetsCHS
-    +process.ak4PFCHSL1FastjetCorrector
-    +process.ak4PFCHSL2RelativeCorrector
-    +process.ak4PFCHSL3AbsoluteCorrector
-    +process.ak4PFCHSL1FastL2L3Corrector
-    +process.ak4PFJetsCHSCorrected
-)
+# process.reconstruction = cms.Sequence(process.localreco+
+#     process.globalreco
+#     +process.particleFlowReco
+#     +process.ak4PFJets
+#     +process.fixedGridRhoFastjetAll
+#     +process.ak4PFL1FastjetCorrector
+#     +process.ak4PFJetsCorrected
+#     +process.particleFlowPtrs
+#     +process.goodOfflinePrimaryVertices
+#     +process.pfPileUpJME
+#     +process.pfNoPileUpJME
+#     +process.ak4PFJetsCHS
+#     +process.ak4PFCHSL1FastjetCorrector
+#     +process.ak4PFCHSL2RelativeCorrector
+#     +process.ak4PFCHSL3AbsoluteCorrector
+#     +process.ak4PFCHSL1FastL2L3Corrector
+#     +process.ak4PFJetsCHSCorrected
+# )
 
 
 # Path and EndPath definitions
-process.raw2digi_step = cms.Path(process.RawToDigi)
+# process.raw2digi_step = cms.Path(process.RawToDigi)
 #process.L1Reco_step = cms.Path(process.L1Reco)
-process.reconstruction_step = cms.Path(process.reconstruction)
+# process.reconstruction_step = cms.Path(process.reconstruction)
 
 process.noFilter_PFDeepCSV = cms.Path(process.HLTBtagDeepCSVSequencePF)
 
@@ -77,13 +164,83 @@ process.noFilter_PFDeepCSV = cms.Path(process.HLTBtagDeepCSVSequencePF)
 #          )
 #      )
 
-# process.DQMStore.enableMultiThread = True
-process.DQMStore.enableMultiThread = False
 
-# process.options.numberOfStreams = cms.untracked.uint32(4)
-# process.options.numberOfThreads = cms.untracked.uint32(4)
-process.options.numberOfStreams = cms.untracked.uint32(1)
-process.options.numberOfThreads = cms.untracked.uint32(1)
+
+
+# max number of events to be processed
+process.maxEvents.input = opts.maxEvents
+
+# number of events to be skipped
+process.source.skipEvents = cms.untracked.uint32(opts.skipEvents)
+
+# multi-threading settings
+process.options.numberOfThreads = cms.untracked.uint32(opts.numThreads if (opts.numThreads > 1) else 1)
+process.options.numberOfStreams = cms.untracked.uint32(opts.numStreams if (opts.numStreams > 1) else 1)
+if hasattr(process, 'DQMStore'):
+   process.DQMStore.enableMultiThread = (process.options.numberOfThreads > 1)
+
+# show cmsRun summary at job completion
+process.options.wantSummary = cms.untracked.bool(opts.wantSummary)
+
+# MessageLogger
+if opts.logs:
+   process.MessageLogger = cms.Service('MessageLogger',
+     destinations = cms.untracked.vstring(
+       'cerr',
+       'logError',
+       'logInfo',
+       'logDebug',
+     ),
+     # scram b USER_CXXFLAGS="-DEDM_ML_DEBUG"
+     debugModules = cms.untracked.vstring(
+       'PixelVerticesSelector',
+       'TracksClosestToFirstVerticesSelector',
+       'JMETriggerNTuple',
+     ),
+     categories = cms.untracked.vstring(
+       'FwkReport',
+     ),
+     cerr = cms.untracked.PSet(
+       threshold = cms.untracked.string('WARNING'),
+       FwkReport = cms.untracked.PSet(
+         reportEvery = cms.untracked.int32(1),
+       ),
+     ),
+     logError = cms.untracked.PSet(
+       threshold = cms.untracked.string('ERROR'),
+       extension = cms.untracked.string('.txt'),
+       FwkReport = cms.untracked.PSet(
+         reportEvery = cms.untracked.int32(1),
+       ),
+     ),
+     logInfo = cms.untracked.PSet(
+       threshold = cms.untracked.string('INFO'),
+       extension = cms.untracked.string('.txt'),
+       FwkReport = cms.untracked.PSet(
+         reportEvery = cms.untracked.int32(1),
+       ),
+     ),
+     logDebug = cms.untracked.PSet(
+       threshold = cms.untracked.string('DEBUG'),
+       extension = cms.untracked.string('.txt'),
+       FwkReport = cms.untracked.PSet(
+         reportEvery = cms.untracked.int32(1),
+       ),
+     ),
+   )
+
+# input EDM files [primary]
+if opts.inputFiles:
+   process.source.fileNames = opts.inputFiles
+else:
+   process.source.fileNames = [
+     "file:/eos/cms/store/mc/PhaseIITDRSpring19DR/TTbar_14TeV_TuneCP5_Pythia8/GEN-SIM-DIGI-RAW/PU200_106X_upgrade2023_realistic_v3_ext1-v3/60000/A7DE6079-B3AE-4743-A5F3-2050EDEB8383.root",
+   ]
+
+
+# dump content of cms.Process to python file
+if opts.dumpPython is not None:
+   open(opts.dumpPython, 'w').write(process.dumpPython())
 
 
 
@@ -152,11 +309,11 @@ process.TFileService = cms.Service("TFileService",
 
 
 ## Options and Output Report
-process.options   = cms.untracked.PSet(
-    # wantSummary = cms.untracked.bool(options.wantSummary),
-    wantSummary = cms.untracked.bool(False),
-    allowUnscheduled = cms.untracked.bool(True)
-)
+# process.options   = cms.untracked.PSet(
+#     # wantSummary = cms.untracked.bool(options.wantSummary),
+#     wantSummary = cms.untracked.bool(False),
+#     allowUnscheduled = cms.untracked.bool(True)
+# )
 
 
 #-------------------------------------
@@ -210,9 +367,11 @@ from RecoBTag.PerformanceMeasurements.eventcounter_cfi import eventCounter
 process.allEvents = eventCounter.clone()
 process.selectedEvents = eventCounter.clone()
 #---------------------------------------
-from RecoBTag.PerformanceMeasurements.myTrackAnalyzer_cfi import myTrackAnalyzer
-process.trackAnalyzer = myTrackAnalyzer.clone()
-process.trackAnalyzer.tracks = cms.InputTag('generalTracks')
+# Tracking Monitoring
+if opts.htrk:
+    from RecoBTag.PerformanceMeasurements.myTrackAnalyzer_cfi import myTrackAnalyzer
+    process.trackAnalyzer = myTrackAnalyzer.clone()
+    process.trackAnalyzer.tracks = cms.InputTag('generalTracks')
 
 ## Define analyzer sequence
 process.analyzerSeq = cms.Sequence(process.btagana)
@@ -224,12 +383,27 @@ process.p = cms.Path(
     #* process.filtSeq
     * process.selectedEvents
     # * process.analyzerSeq
-    * process.trackAnalyzer
+    # * process.trackAnalyzer
 )
-
+if opts.htrk:
+    process.p*=process.trackAnalyzer
 
 process.analysisNTupleEndPath = cms.EndPath(process.analyzerSeq)
 
 del process.out
 
 # open('pydump.py','w').write(process.dumpPython())
+# print-outs
+print '--- runHLTBTagAnalyzer_PhaseII_cfg.py ---\n'
+print 'process.maxEvents.input =', process.maxEvents.input
+print 'process.source.skipEvents =', process.source.skipEvents
+print 'process.source.fileNames =', process.source.fileNames
+print 'process.source.secondaryFileNames =', process.source.secondaryFileNames
+print 'numThreads =', opts.numThreads
+print 'numStreams =', opts.numStreams
+print 'logs =', opts.logs
+print 'wantSummary =', opts.wantSummary
+print 'dumpPython =', opts.dumpPython
+print 'doTrackHistos =', opts.htrk
+print 'doTrackingV0 =', opts.doTrackV0
+print '\n-------------------------------'
