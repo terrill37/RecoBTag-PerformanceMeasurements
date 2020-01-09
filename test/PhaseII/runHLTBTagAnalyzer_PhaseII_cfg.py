@@ -1,12 +1,15 @@
 ### configuration file to re-run customized HLT Menu on RAW
 
 # use the following two lines for tracking V0 setup
-from RecoBTag.PerformanceMeasurements.Simone_TrackingV0 import cms, process
-process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_cff")
+# from RecoBTag.PerformanceMeasurements.Simone_TrackingV0 import cms, process
+# process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_cff")
 
 # use the following two lines for tracking V2 setup
-# from RecoBTag.PerformanceMeasurements.Simone_TrackingV2 import cms, process
-# process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_trackV2PF_cff")
+from RecoBTag.PerformanceMeasurements.Simone_TrackingV2 import cms, process
+process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_trackV2PF_cff")
+
+del process.HLTOutput
+del process.DQMFileSaverOutput
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
@@ -122,7 +125,7 @@ for requiredGroup in groups:
 
 # print "Running on data: %s"%('True' if options.runOnData else 'False')
 # print "Running with globalTag: %s"%(options.globalTag)
-print "Running with globalTag: %s"%("auto:phase2_realistic_T14")
+# print "Running with globalTag: %s"%("auto:phase2_realistic_T14")
 
 # trigresults='TriggerResults::HLT'
 # trigresults='TriggerResults'
@@ -226,7 +229,6 @@ process.p = cms.Path(
 
 
 process.analysisNTupleEndPath = cms.EndPath(process.analyzerSeq)
-
 
 del process.out
 
