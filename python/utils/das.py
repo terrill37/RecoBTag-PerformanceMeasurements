@@ -6,7 +6,7 @@ from __future__ import print_function
 
 import json
 
-from JMETriggerAnalysis.NTuplizers.utils.common import *
+from RecoBTag.PerformanceMeasurements.utils.common import *
 
 def load_dataset_data(das_name, max_files=-1, max_events=-1, verbose=False):
 

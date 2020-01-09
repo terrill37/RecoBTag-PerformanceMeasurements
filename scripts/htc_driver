@@ -10,10 +10,9 @@ import math
 import json
 import datetime
 
-# from JMETriggerAnalysis.NTuplizers.utils.common import *
-# from JMETriggerAnalysis.NTuplizers.utils.das import load_dataset_data, skim_das_jsondump
 from RecoBTag.PerformanceMeasurements.utils.common import *
 from RecoBTag.PerformanceMeasurements.utils.das import load_dataset_data, skim_das_jsondump
+
 
 #### main
 if __name__ == '__main__':
@@ -44,7 +43,7 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--n-events', dest='n_events', action='store', type=int, default=-1, required=False,
                         help='maximum number of events per job')
 
-    parser.add_argument('-p', '--parentFiles-level', dest='parentFiles_level', action='store', type=int, default=2, required=False,
+    parser.add_argument('-p', '--parentFiles-level', dest='parentFiles_level', action='store', type=int, default=0, required=False,
                         help='level of parentFiles to be used as secondary input files (currently, anything other than 1 and 2 disables the usage of secondary input files)')
 
     parser.add_argument('--cpus', dest='cpus', action='store', type=int, default=1, required=False,
@@ -55,6 +54,9 @@ if __name__ == '__main__':
 
     parser.add_argument('--runtime', dest='runtime', action='store', type=int, default=10800, required=False,
                         help='argument of HTCondor parameter "+RequestRuntime"')
+
+    parser.add_argument('--jobflavour', dest='jobflavour', action='store',  default='workday', required=False,
+                        help='argument of HTCondor parameter "+JobFlavour"')
 
     parser.add_argument('--batch-name', dest='batch_name', action='store', default=None, required=False,
                         help='argument of HTCondor parameter "batch_name" (if not specified, basename of argument of "--output" is used)')
@@ -235,6 +237,7 @@ if opts.dumpPython is not None:
       'RequestCpus = '+str(opts.cpus),
       'RequestMemory = '+str(opts.memory),
       '+RequestRuntime = '+str(opts.runtime),
+      '+JobFlavour = '+str(opts.jobflavour),
       'x509userproxy = $(BASEDIR)/X509_USER_PROXY',
       'queue QFILE matching files $(BASEDIR)/*/flag.queue',
     ]

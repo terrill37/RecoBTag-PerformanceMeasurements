@@ -8,7 +8,6 @@ import os
 import math
 import glob
 
-# from JMETriggerAnalysis.NTuplizers.utils.common import *
 from RecoBTag.PerformanceMeasurements.utils.common import *
 
 def monitor(options, log=''):
