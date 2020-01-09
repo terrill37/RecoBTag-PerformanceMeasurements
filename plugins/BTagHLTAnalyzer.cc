@@ -404,8 +404,6 @@ void BTagHLTAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Ev
   EventInfo.Evt  = iEvent.id().event();
   EventInfo.LumiBlock  = iEvent.luminosityBlock();
 
-  std::cout<<iEvent.id().event()<<std::endl;
-
   //------------------
   // Primary vertex
   //------------------
