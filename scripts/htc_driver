@@ -236,8 +236,8 @@ if opts.dumpPython is not None:
       'requirements = (OpSysAndVer == "'+('CentOS7' if is_slc7_arch else 'SL6')+'")',
       'RequestCpus = '+str(opts.cpus),
       'RequestMemory = '+str(opts.memory),
-      '+RequestRuntime = '+str(opts.runtime),
-      '+JobFlavour = '+str(opts.jobflavour),
+      # '+RequestRuntime = '+str(opts.runtime),
+      '+JobFlavour = "'+str(opts.jobflavour)+'"',
       'x509userproxy = $(BASEDIR)/X509_USER_PROXY',
       'queue QFILE matching files $(BASEDIR)/*/flag.queue',
     ]
