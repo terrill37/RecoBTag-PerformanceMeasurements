@@ -30,6 +30,11 @@ opts.register('doTrackV0', False,
               vpo.VarParsing.varType.bool,
               'Use TrackingV0 instead of V2')
 
+opts.register('runCMSSW11Sample', False,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.bool,
+              'Use setup for CMSSW 11')
+
 opts.register('wantSummary', False,
               vpo.VarParsing.multiplicity.singleton,
               vpo.VarParsing.varType.bool,
@@ -52,9 +57,14 @@ if opts.doTrackV0:
     from RecoBTag.PerformanceMeasurements.step3_TrackingV0_11_0_0 import cms, process
     process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_cff")
 else:
-    # use the following two lines for tracking V2 setup
-    from RecoBTag.PerformanceMeasurements.step3_TrackingV2_11_0_0 import cms, process
-    process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_trackV2_cff")
+    if opts.runCMSSW11Sample:
+        # use the following two lines for tracking V2 setup
+        from RecoBTag.PerformanceMeasurements.step3_TrackingV2_11_0_0_samples import cms, process
+        process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_trackV2_cff")
+    else:
+        # use the following two lines for tracking V2 setup
+        from RecoBTag.PerformanceMeasurements.step3_TrackingV2_11_0_0 import cms, process
+        process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_trackV2_cff")
 
 
 # remove cms.EndPath for EDM output
@@ -234,7 +244,9 @@ if opts.inputFiles:
    process.source.fileNames = opts.inputFiles
 else:
    process.source.fileNames = [
-     "file:/eos/cms/store/mc/PhaseIITDRSpring19DR/TTbar_14TeV_TuneCP5_Pythia8/GEN-SIM-DIGI-RAW/PU200_106X_upgrade2023_realistic_v3_ext1-v3/60000/A7DE6079-B3AE-4743-A5F3-2050EDEB8383.root",
+     # "file:/eos/cms/store/mc/PhaseIITDRSpring19DR/TTbar_14TeV_TuneCP5_Pythia8/GEN-SIM-DIGI-RAW/PU200_106X_upgrade2023_realistic_v3_ext1-v3/60000/A7DE6079-B3AE-4743-A5F3-2050EDEB8383.root",
+     # /RelValTTbar_14TeV/CMSSW_11_0_0_pre13-110X_mcRun4_realistic_v2_2026D49noPU-v1/GEN-SIM-DIGI-RAW",
+     "/store/relval/CMSSW_11_0_0_pre13/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/110X_mcRun4_realistic_v2_2026D49noPU-v1/20000/D7F3470F-864E-944B-922E-7178756F4652.root",
    ]
 
 
@@ -406,4 +418,5 @@ print 'wantSummary =', opts.wantSummary
 print 'dumpPython =', opts.dumpPython
 print 'doTrackHistos =', opts.htrk
 print 'doTrackingV0 =', opts.doTrackV0
+print 'runCMSSW11Sample =', opts.runCMSSW11Sample
 print '\n-------------------------------'
