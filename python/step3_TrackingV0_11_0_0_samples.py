@@ -8,6 +8,7 @@ import FWCore.ParameterSet.Config as cms
 # from Configuration.Eras.Era_Phase2C8_cff import Phase2C8
 from Configuration.Eras.Era_Phase2C9_cff import Phase2C9
 
+
 # process = cms.Process('RECO2',Phase2C8)
 process = cms.Process('RECO2',Phase2C9)
 
@@ -37,7 +38,7 @@ process.source = cms.Source("PoolSource",
 #    '/store/mc/PhaseIITDRSpring19DR/QCD_Pt-15to3000_EMEnriched_TuneCP5_13TeV_pythia8/GEN-SIM-DIGI-RAW/PU200_106X_upgrade2023_realistic_v3-v1/50000/BBB89FE4-5C9D-7842-BDE3-C89FF77630B6.root',
 #    '/store/mc/PhaseIITDRSpring19DR/TTbar_14TeV_TuneCP5_Pythia8/GEN-SIM-DIGI-RAW/PU200_106X_upgrade2023_realistic_v3_ext1-v3/60000/A7DE6079-B3AE-4743-A5F3-2050EDEB8383.root',
 #    '/store/mc/PhaseIITDRSpring19DR/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/GEN-SIM-DIGI-RAW/NoPU_castor_106X_upgrade2023_realistic_v3-v2/270000/07A5023E-D011-E448-87A6-FD9586277D47.root',
-    '/store/mc/PhaseIITDRSpring19DR/QCD_Pt_50to80_TuneCP5_14TeV_pythia8/GEN-SIM-DIGI-RAW/NoPU_106X_upgrade2023_realistic_v3-v2/260000/0053B97F-B96D-0244-9074-4878AA9B8BC0.root',
+    # '/store/mc/PhaseIITDRSpring19DR/QCD_Pt_50to80_TuneCP5_14TeV_pythia8/GEN-SIM-DIGI-RAW/NoPU_106X_upgrade2023_realistic_v3-v2/260000/0053B97F-B96D-0244-9074-4878AA9B8BC0.root',
   ),
   secondaryFileNames = cms.untracked.vstring(),
 )
@@ -59,7 +60,9 @@ process.configurationMetadata = cms.untracked.PSet(
 from Configuration.AlCa.GlobalTag import GlobalTag
 # process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T14', '')
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T15', '')
-# process.GlobalTag.globaltag = '110X_mcRun4_realistic_v3' #needed for PU200 RelValCMSSW11 samples
+process.GlobalTag.globaltag = '110X_mcRun4_realistic_v3'
+# process.GlobalTag = GlobalTag(process.GlobalTag, '110X_mcRun4_realistic_v2', '')
+# process.GlobalTag = GlobalTag(process.GlobalTag, '110X_mcRun4_realistic_v3', '')
 
 #modifications:
 process.calolocalreco = cms.Sequence(process.ecalLocalRecoSequence+process.hcalLocalRecoSequence+process.hbhereco+process.hgcalLocalRecoSequence)
@@ -370,43 +373,6 @@ process.muonSeededStepSequence = cms.Sequence(
     process.muonSeededTracksOutInSequence +
     process.muonSeededTracksInOutSequence
 )
-process.generalTracks = cms.EDProducer("TrackListMerger",  ### v1
-    Epsilon = cms.double(-0.001),
-    FoundHitBonus = cms.double(5.0),
-    LostHitPenalty = cms.double(5.0),
-    MaxNormalizedChisq = cms.double(1000.0),
-    MinFound = cms.int32(3),
-    MinPT = cms.double(0.05),
-    ShareFrac = cms.double(0.19),
-    TrackProducers = cms.VInputTag(
-        "initialStepTracks", "highPtTripletStepTracks" ### v2
-    ),
-    allowFirstHitShare = cms.bool(True),
-    copyExtras = cms.untracked.bool(True),
-    copyMVA = cms.bool(True),
-    hasSelector = cms.vint32(
-        1, 1#, 1#, 1, 1,  ### v2
-        #1
-    ),
-    indivShareFrac = cms.vdouble(
-        1.0, 0.16#, 0.095, 0.09, 0.09, ### v2
-        #0.09
-    ),
-    makeReKeyedSeeds = cms.untracked.bool(False),
-    newQuality = cms.string('confirmed'),
-    selectedTrackQuals = cms.VInputTag(
-        cms.InputTag("initialStepSelector","initialStep"), cms.InputTag("highPtTripletStepSelector","highPtTripletStep")### v2
-    ),
-    setsToMerge = cms.VPSet(cms.PSet(
-        pQual = cms.bool(True),
-        tLists = cms.vint32(
-            0, 1#, 2#, 3, 4, ### v2
-            #5
-        )
-    )),
-    trackAlgoPriorityOrder = cms.string('trackAlgoPriorityOrder'),
-    writeOnlyTrkQuals = cms.bool(False)
-)
 
 process.globalreco_tracking = cms.Sequence(
     process.offlineBeamSpot+
@@ -417,16 +383,16 @@ process.globalreco_tracking = cms.Sequence(
     process.trackerClusterCheck +
     process.initialStepSequence +
     process.highPtTripletStepSequence +
-    #process.lowPtQuadStepSequence +
-    #process.lowPtTripletStepSequence +
-    #process.detachedQuadStepSequence +
-    #process.pixelPairStepSequence +
-    #process.earlyGeneralTracks +
-    #process.muonSeededStepSequence +
-    #process.preDuplicateMergingGeneralTracks +
-    #process.duplicateTrackCandidates +
-    #process.mergedDuplicateTracks +
-    #process.duplicateTrackClassifier +
+    process.lowPtQuadStepSequence +
+    process.lowPtTripletStepSequence +
+    process.detachedQuadStepSequence +
+    process.pixelPairStepSequence +
+    process.earlyGeneralTracks +
+    process.muonSeededStepSequence +
+    process.preDuplicateMergingGeneralTracks +
+    process.duplicateTrackCandidates +
+    process.mergedDuplicateTracks +
+    process.duplicateTrackClassifier +
     process.generalTracks +
     process.vertexreco
 )
@@ -615,8 +581,6 @@ process.DQMFileSaverOutput = cms.EndPath( process.fastTimerServiceClient + proce
 #from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 #process = customiseEarlyDelete(process)
 # End adding early deletion
-
-# HLT Tracking v2: re-defining generalTracks as earlyGeneralTracks with only 2 iterations
 
 from SLHCUpgradeSimulations.Configuration.aging import customise_aging_1000
 process = customise_aging_1000(process)
