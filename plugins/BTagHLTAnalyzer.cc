@@ -328,7 +328,7 @@ BTagHLTAnalyzerT<IPTI,VTX>::BTagHLTAnalyzerT(const edm::ParameterSet& iConfig):
   runHLTJetVariables_ = iConfig.getParameter<bool>("runHLTJetVariables");
 
   // Modules
-  primaryVertexColl_   = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("primaryVertexColl"));
+  primaryVertexColl_   = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("HLTprimaryVertexColl"));
 
 //
 //  branchNamePrefix_ = iConfig.getParameter<std::string>("BranchNamePrefix");
@@ -630,7 +630,7 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
 	  if(tagVars.getList(reco::btau::trackJetPt,false).size())
 	    JetInfo[iJetColl].TagVarCSV_trackJetPt[JetInfo[iJetColl].nJet]                  = ( tagVars.getList(reco::btau::trackJetPt,false).at(0));
 
-
+	  
           std::vector<float> tagValList = tagVars.getList(reco::btau::trackMomentum,false);
           if(tagValList.size()>0) std::copy( tagValList.begin(), tagValList.end(), &JetInfo[iJetColl].TagVar_trackMomentum[JetInfo[iJetColl].nTrkTagVar] );
           tagValList = tagVars.getList(reco::btau::trackEta,false);
