@@ -20,6 +20,11 @@ opts.register('numStreams', 1,
               vpo.VarParsing.varType.int,
               'number of streams')
 
+opts.register('gt', None,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.string,
+              'argument of process.GlobalTag.globaltag')
+
 opts.register('logs', False,
               vpo.VarParsing.multiplicity.singleton,
               vpo.VarParsing.varType.bool,
@@ -40,7 +45,7 @@ opts.register('dumpPython', None,
               vpo.VarParsing.varType.string,
               'Path to python file with content of cms.Process')
 
-opts.register('htrk', True,
+opts.register('htrk', False,
               vpo.VarParsing.multiplicity.singleton,
               vpo.VarParsing.varType.bool,
               'added monitoring histograms for selected Tracks and Vertices')
@@ -53,78 +58,16 @@ opts.register('skimTracks', False,
 opts.parseArguments()
 
 if opts.doTrackV0:
-    # use the following two lines for tracking V2 setup
-    # from RecoBTag.PerformanceMeasurements.step3_TrackingV0_11_0_0_samples import cms, process
+    # use the following two lines for tracking V0 setup
     from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv00_cfg import cms, process
-    # process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_cff")
-
 else:
     # use the following two lines for tracking V2 setup
     from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv02_cfg import cms, process
-    # process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_trackV2_cff")
 
-# process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_trackV2_cff")
-# process.load("RecoBTag.PerformanceMeasurements.BTagHLT_stripped_trackV2_LikeOffline11_cff")
-
-# remove cms.EndPath for EDM output
-# del process.HLTOutput
-
-# remove cms.EndPath for DQM output
-# del process.DQMFileSaverOutput
 
 # reset path to EDM input files
 process.source.fileNames = []
 process.source.secondaryFileNames = []
-
-
-
-
-###
-### Sequence for HLT(-like) AK4-{PF,Calo} Jets
-###
-# process.ak4PFJetsCorrected.correctors = ['ak4PFL1FastL2L3Corrector']
-#
-# process.ak4CaloL1FastjetCorrector = cms.EDProducer('L1FastjetCorrectorProducer',
-#   algorithm = cms.string('AK4Calo'),
-#   level = cms.string('L1FastJet'),
-#   srcRho = cms.InputTag('fixedGridRhoFastjetAll'),
-# )
-# process.ak4CaloL2RelativeCorrector = cms.EDProducer('LXXXCorrectorProducer',
-#   algorithm = cms.string('AK4Calo'),
-#   level = cms.string('L2Relative'),
-# )
-# process.ak4CaloL3AbsoluteCorrector = cms.EDProducer('LXXXCorrectorProducer',
-#   algorithm = cms.string('AK4Calo'),
-#   level = cms.string('L3Absolute'),
-# )
-# process.ak4CaloL1FastL2L3Corrector = cms.EDProducer('ChainedJetCorrectorProducer',
-#   correctors = cms.VInputTag('ak4CaloL1FastjetCorrector', 'ak4CaloL2RelativeCorrector', 'ak4CaloL3AbsoluteCorrector'),
-# )
-# process.ak4CaloJetsCorrected = cms.EDProducer('CorrectedCaloJetProducer',
-#   correctors = cms.VInputTag('ak4CaloL1FastL2L3Corrector'),
-#   src = cms.InputTag('ak4CaloJets'),
-# )
-# process.ak4CaloJetsSeq = cms.Sequence(
-#     process.ak4CaloL1FastjetCorrector
-#   * process.ak4CaloL2RelativeCorrector
-#   * process.ak4CaloL3AbsoluteCorrector
-#   * process.ak4CaloL1FastL2L3Corrector
-#   * process.ak4CaloJetsCorrected
-# )
-# process.reconstruction *= process.ak4CaloJetsSeq
-
-
-
-# Input source
-# process.source = cms.Source("PoolSource",
-#     fileNames = cms.untracked.vstring(
-# "file:/eos/cms/store/mc/PhaseIITDRSpring19DR/TTbar_14TeV_TuneCP5_Pythia8/GEN-SIM-DIGI-RAW/PU200_106X_upgrade2023_realistic_v3_ext1-v3/60000/A7DE6079-B3AE-4743-A5F3-2050EDEB8383.root"
-# ),
-#     secondaryFileNames = cms.untracked.vstring()
-# )
-# process.options = cms.untracked.PSet(
-# )
-
 
 
 
@@ -135,9 +78,8 @@ if opts.skimTracks:
 
 
 
-
 process.noFilter_PFDeepCSV = cms.Path(process.HLTBtagDeepCSVSequencePF)
-
+process.schedule.extend([process.noFilter_PFDeepCSV])
 
 
 # max number of events to be processed
@@ -149,8 +91,6 @@ process.source.skipEvents = cms.untracked.uint32(opts.skipEvents)
 # multi-threading settings
 process.options.numberOfThreads = cms.untracked.uint32(opts.numThreads if (opts.numThreads > 1) else 1)
 process.options.numberOfStreams = cms.untracked.uint32(opts.numStreams if (opts.numStreams > 1) else 1)
-# if hasattr(process, 'DQMStore'):
-#    process.DQMStore.enableMultiThread = (process.options.numberOfThreads > 1)
 
 # show cmsRun summary at job completion
 process.options.wantSummary = cms.untracked.bool(opts.wantSummary)
@@ -254,56 +194,28 @@ for requiredGroup in groups:
 
 
 
-
-# print "Running on data: %s"%('True' if options.runOnData else 'False')
-# print "Running with globalTag: %s"%(options.globalTag)
-# print "Running with globalTag: %s"%("auto:phase2_realistic_T14")
-
-# trigresults='TriggerResults::HLT'
-# trigresults='TriggerResults'
-
-# if options.inputFiles:
-#     process.source.fileNames = options.inputFiles
+# update process.GlobalTag.globaltag
+if opts.gt is not None:
+   process.GlobalTag.globaltag = opts.gt
+print "Running with globalTag: %s"%(process.GlobalTag.globaltag)
 
 
 
+outFilename = 'JetTree'
 ## Define the output file name
-# if options.runOnData :
-#     options.outFilename += '_data'
-# else :
-#     options.outFilename += '_mc'
-#
-# options.outFilename += '.root'
-outFilename = 'JetTree_mc.root'
+if process.btagana.runOnData:
+    outFilename += '_data'
+else :
+    outFilename += '_mc'
+
+outFilename += '.root'
+
 
 ## Output file
 process.TFileService = cms.Service("TFileService",
-   # fileName = cms.string(options.outFilename)
    fileName = cms.string(outFilename)
 )
 
-
-## Options and Output Report
-# process.options   = cms.untracked.PSet(
-#     # wantSummary = cms.untracked.bool(options.wantSummary),
-#     wantSummary = cms.untracked.bool(False),
-#     allowUnscheduled = cms.untracked.bool(True)
-# )
-
-
-#-------------------------------------
-## Output Module Configuration (expects a path 'p')
-# from PhysicsTools.PatAlgos.patEventContent_cff import patEventContent
-# process.out = cms.OutputModule("PoolOutputModule",
-#                                # fileName = cms.untracked.string(options.outFilename),
-#                                fileName = cms.untracked.string(outFilename),
-#                                # save only events passing the full path
-#                                SelectEvents   = cms.untracked.PSet( SelectEvents = cms.vstring('p') ),
-#                                # save PAT Layer 1 output; you need a '*' to
-#                                # unpack the list of commands 'patEventContent'
-#                                outputCommands = cms.untracked.vstring('drop *', *patEventContent)
-#                                #outputCommands = cms.untracked.vstring('keep *')
-# )
 
 
 #-------------------------------------
@@ -319,21 +231,17 @@ for requiredGroup in process.btagana.groups:
 
 process.btagana.MaxEta                = 4.5
 process.btagana.MinPt                 = 25
-# process.btagana.triggerTable          = cms.InputTag('TriggerResults::HLT') # Data and MC
 # process.btagana.triggerTable          = cms.InputTag('TriggerResults::RECO2') # Data and MC
 process.btagana.triggerTable          = cms.InputTag('TriggerResults') # Data and MC
 # process.btagana.primaryVertexColl     = cms.InputTag('hltVerticesPF')
 process.btagana.primaryVertexColl     = cms.InputTag('offlinePrimaryVertices') #change with new Offline like sequence
-# process.btagana.primaryVertexColl     = cms.InputTag('firstStepPrimaryVertices')
 
 process.btagana.runHLTJetVariables     = cms.bool(True)
-# process.btagana.runOnData = options.runOnData
 process.btagana.runOnData = False
 
 process.btagana.PFJets               = cms.InputTag('hltAK4PFCHSJetsCorrected')
 process.btagana.PFJetTags            = cms.InputTag('hltDeepCombinedSecondaryVertexBJetTagsInfos')
 process.btagana.PFSVs                = cms.InputTag('hltDeepSecondaryVertexTagInfosPF')
-# process.btagana.PFJetCSVTags         = cms.InputTag('hltCombinedSecondaryVertexBJetTagsPF')
 process.btagana.PFJetDeepCSVTags     = cms.InputTag('hltDeepCombinedSecondaryVertexBJetTagsPF:probb')
 
 
@@ -344,28 +252,23 @@ from RecoBTag.PerformanceMeasurements.eventcounter_cfi import eventCounter
 process.allEvents = eventCounter.clone()
 process.selectedEvents = eventCounter.clone()
 #---------------------------------------
-# Tracking Monitoring
-# if opts.htrk:
-#     from RecoBTag.PerformanceMeasurements.myTrackAnalyzer_cfi import myTrackAnalyzer
-#     process.trackAnalyzer = myTrackAnalyzer.clone()
-#     process.trackAnalyzer.tracks = cms.InputTag('generalTracks')
 
 # Tracking Monitoring
 if opts.htrk:
-   # process.reconstruction_pixelTrackingOnly_step = cms.Path(process.reconstruction_pixelTrackingOnly)
-   # process.schedule.extend([process.reconstruction_pixelTrackingOnly_step])
+   process.reconstruction_pixelTrackingOnly_step = cms.Path(process.reconstruction_pixelTrackingOnly)
+   process.schedule.extend([process.reconstruction_pixelTrackingOnly_step])
 
    from JMETriggerAnalysis.Common.TrackHistogrammer_cfi import TrackHistogrammer
-   # process.TrackHistograms_pixelTracks = TrackHistogrammer.clone(src = 'pixelTracks')
+   process.TrackHistograms_pixelTracks = TrackHistogrammer.clone(src = 'pixelTracks')
    process.TrackHistograms_generalTracks = TrackHistogrammer.clone(src = 'generalTracks')
 
    from JMETriggerAnalysis.Common.VertexHistogrammer_cfi import VertexHistogrammer
-   # process.VertexHistograms_pixelVertices = VertexHistogrammer.clone(src = 'pixelVertices')
+   process.VertexHistograms_pixelVertices = VertexHistogrammer.clone(src = 'pixelVertices')
    process.VertexHistograms_offlinePrimaryVertices = VertexHistogrammer.clone(src = 'offlinePrimaryVertices')
 
    process.trkMonitoringSeq = cms.Sequence(
-       # process.TrackHistograms_pixelTracks
-     process.TrackHistograms_generalTracks
+       process.TrackHistograms_pixelTracks
+       +process.TrackHistograms_generalTracks
    )
 
    if opts.skimTracks:
@@ -373,32 +276,21 @@ if opts.htrk:
       process.trkMonitoringSeq += process.TrackHistograms_generalTracksOriginal
 
    process.trkMonitoringSeq += cms.Sequence(
-       # process.VertexHistograms_pixelVertices
-     process.VertexHistograms_offlinePrimaryVertices
+    process.VertexHistograms_pixelVertices
+    +process.VertexHistograms_offlinePrimaryVertices
    )
    process.trkMonitoringEndPath = cms.EndPath(process.trkMonitoringSeq)
    process.schedule.extend([process.trkMonitoringEndPath])
 
 
-## Define analyzer sequence
-# process.analyzerSeq = cms.Sequence(process.btagana)
-
-
 
 process.p = cms.Path(
     process.allEvents
-    #* process.filtSeq
     * process.selectedEvents
-    # * process.analyzerSeq
-    # * process.trackAnalyzer
 )
-# if opts.htrk:
-#     process.p*=process.trackAnalyzer
 process.schedule.extend([process.p])
-# process.analysisNTupleEndPath = cms.EndPath(process.analyzerSeq)
 process.analysisNTupleEndPath = cms.EndPath(process.btagana)
 process.schedule.extend([process.analysisNTupleEndPath])
-# del process.out
 
 # dump content of cms.Process to python file
 if opts.dumpPython is not None:
@@ -414,6 +306,7 @@ print 'numThreads =', opts.numThreads
 print 'numStreams =', opts.numStreams
 print 'logs =', opts.logs
 print 'wantSummary =', opts.wantSummary
+print 'process.GlobalTag.globaltag =', process.GlobalTag.globaltag
 print 'dumpPython =', opts.dumpPython
 print 'doTrackHistos =', opts.htrk
 print 'doTrackingV0 =', opts.doTrackV0
