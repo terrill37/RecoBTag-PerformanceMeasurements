@@ -203,10 +203,10 @@ print "Running with globalTag: %s"%(process.GlobalTag.globaltag)
 
 outFilename = 'JetTree'
 ## Define the output file name
-if process.btagana.runOnData:
-    outFilename += '_data'
-else :
-    outFilename += '_mc'
+# if process.btagana.runOnData:
+#     outFilename += '_data'
+# else :
+outFilename += '_mc'
 
 outFilename += '.root'
 
@@ -252,6 +252,30 @@ from RecoBTag.PerformanceMeasurements.eventcounter_cfi import eventCounter
 process.allEvents = eventCounter.clone()
 process.selectedEvents = eventCounter.clone()
 #---------------------------------------
+
+# update JESC via local SQLite file
+from CondCore.CondDB.CondDB_cfi import CondDB
+# CondDBJECFile = CondDB.clone(connect = 'sqlite_file:RecoBTag/PerformanceMeasurements/data/PhaseIIFall17_V5b_MC.db' )
+CondDBJECFile = CondDB.clone(connect = 'sqlite_fip:RecoBTag/PerformanceMeasurements/data/PhaseIIFall17_V5b_MC.db' )
+process.jec = cms.ESSource('PoolDBESSource', CondDBJECFile, toGet = cms.VPSet())
+for _tmp in [
+  'AK4PF',
+#      'AK4PFchs',
+#      'AK4PFPuppi',
+#      'AK8PF',
+#      'AK8PFchs',
+#      'AK8PFPuppi',
+]:
+  process.jec.toGet.append(
+    cms.PSet(
+      record = cms.string('JetCorrectionsRecord'),
+      tag = cms.string('JetCorrectorParametersCollection_PhaseIIFall17_V5b_MC_'+_tmp),
+      label = cms.untracked.string(_tmp),
+    )
+  )
+
+# Add an ESPrefer to override JEC that might be available from the global tag
+process.es_prefer_jec = cms.ESPrefer('PoolDBESSource', 'jec')
 
 # Tracking Monitoring
 if opts.htrk:
