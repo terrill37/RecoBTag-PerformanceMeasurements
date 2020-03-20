@@ -20,7 +20,7 @@ git clone -b PrunedTraining_NoPuppi https://github.com/emilbols/RecoBTag-Combine
 wget https://raw.githubusercontent.com/cms-data/RecoBTag-Combined/master/DeepCSV_PhaseII.json -P RecoBTag/Combined/data/
 git clone -b PhaseIIOnline --depth 1 https://github.com/johnalison/RecoBTag-PerformanceMeasurements.git RecoBTag/PerformanceMeasurements
 
-git clone https://github.com/missirol/JMETriggerAnalysis.git -o missirol -b phase2_devel
+git clone https://github.com/missirol/JMETriggerAnalysis.git -o missirol -b phase2
 
 scram b -j8
 
@@ -28,7 +28,7 @@ scram b -j8
 
 
 * **Step #2** : generate customized configuration file to run TRK(v02)+PF+JME+BTV HLT-like reconstruction on RAW.
-Already done in `RecoBTag/PerformanceMeasurements/python/hltPhase2_TRKv02_cfg`
+Already done in `RecoBTag/PerformanceMeasurements/python/hltPhase2_TRKv2_cfg`
 ```
 cmsDriver.py step3 \
   --geometry Extended2026D49 --era Phase2C9 \
@@ -41,7 +41,7 @@ cmsDriver.py step3 \
   --mc \
   --nThreads 4 \
   --nStreams 4 \
-  --python_filename hltPhase2_TRKv02_cfg.py \
+  --python_filename hltPhase2_TRKv2_cfg.py \
   --no_exec \
   -n 10 \
   --customise SLHCUpgradeSimulations/Configuration/aging.customise_aging_1000,Configuration/DataProcessing/Utils.addMonitoring \

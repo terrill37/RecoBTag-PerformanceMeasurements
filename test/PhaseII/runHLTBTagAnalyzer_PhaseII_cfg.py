@@ -59,10 +59,10 @@ opts.parseArguments()
 
 if opts.doTrackV0:
     # use the following two lines for tracking V0 setup
-    from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv00_cfg import cms, process
+    from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv0_cfg import cms, process
 else:
     # use the following two lines for tracking V2 setup
-    from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv02_cfg import cms, process
+    from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv2_cfg import cms, process
 
 
 # reset path to EDM input files
