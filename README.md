@@ -27,8 +27,8 @@ scram b -j8
 ```
 
 
-* **Step #2** : generate customized configuration file to run TRK(v02)+PF+JME+BTV HLT-like reconstruction on RAW.
-Already done in `RecoBTag/PerformanceMeasurements/python/hltPhase2_TRKv2_cfg`
+* **Step #2a** : generate customized configuration file to run TRK(v02)+PF+JME+BTV HLT-like reconstruction on RAW.
+Already done in `RecoBTag/PerformanceMeasurements/python/hltPhase2_TRKv02_cfg`
 ```
 cmsDriver.py step3 \
   --geometry Extended2026D49 --era Phase2C9 \
@@ -41,11 +41,35 @@ cmsDriver.py step3 \
   --mc \
   --nThreads 4 \
   --nStreams 4 \
-  --python_filename hltPhase2_TRKv2_cfg.py \
+  --python_filename hltPhase2_TRKv02_cfg.py \
   --no_exec \
   -n 10 \
   --customise SLHCUpgradeSimulations/Configuration/aging.customise_aging_1000,Configuration/DataProcessing/Utils.addMonitoring \
-  --customise JMETriggerAnalysis/Common/hltPhase2_TRKv02.customize_hltPhase2_TRKv2 \
+  --customise JMETriggerAnalysis/Common/hltPhase2_TRKv02.customize_hltPhase2_TRKv02 \
+  --customise JMETriggerAnalysis/Common/hltPhase2_JME.customize_hltPhase2_JME \
+  --customise RecoBTag/PerformanceMeasurements/hltPhase2_BTV.customize_hltPhase2_BTV \
+  --customise_commands 'process.schedule.remove(process.RECOoutput_step)\ndel process.RECOoutput\ndel process.RECOoutput_step\n'
+```
+
+* **Step #2b** : generate customized configuration file to run TRK(v00)+PF+JME+BTV HLT-like reconstruction on RAW.
+Already done in `RecoBTag/PerformanceMeasurements/python/hltPhase2_TRKv00_cfg`
+```
+cmsDriver.py step3 \
+  --geometry Extended2026D49 --era Phase2C9 \
+  --conditions auto:phase2_realistic_T15 \
+  --processName RECO2 \
+  --step RAW2DIGI,RECO \
+  --eventcontent RECO \
+  --datatier RECO \
+  --filein /store/mc/Phase2HLTTDRWinter20DIGI/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/GEN-SIM-DIGI-RAW/PU200_castor_110X_mcRun4_realistic_v3-v2/10000/05BFAD3E-3F91-1843-ABA2-2040324C7567.root \
+  --mc \
+  --nThreads 4 \
+  --nStreams 4 \
+  --python_filename hltPhase2_TRKv00_cfg.py \
+  --no_exec \
+  -n 10 \
+  --customise SLHCUpgradeSimulations/Configuration/aging.customise_aging_1000,Configuration/DataProcessing/Utils.addMonitoring \
+  --customise JMETriggerAnalysis/Common/hltPhase2_TRKv00.customize_hltPhase2_TRKv00 \
   --customise JMETriggerAnalysis/Common/hltPhase2_JME.customize_hltPhase2_JME \
   --customise RecoBTag/PerformanceMeasurements/hltPhase2_BTV.customize_hltPhase2_BTV \
   --customise_commands 'process.schedule.remove(process.RECOoutput_step)\ndel process.RECOoutput\ndel process.RECOoutput_step\n'
