@@ -264,6 +264,57 @@ def customize_hltPhase2_BTV(process, name='HLTBTVSequence'):
     )
 
 
+    process.hltCandidateJetBProbabilityComputer = cms.ESProducer("CandidateJetBProbabilityESProducer",
+        a_dR = cms.double(-0.001053),
+        a_pT = cms.double(0.005263),
+        b_dR = cms.double(0.6263),
+        b_pT = cms.double(0.3684),
+        deltaR = cms.double(-1.0),
+        impactParameterType = cms.int32(0),
+        max_pT = cms.double(500),
+        max_pT_dRcut = cms.double(0.1),
+        max_pT_trackPTcut = cms.double(3),
+        maximumDecayLength = cms.double(5.0),
+        maximumDistanceToJetAxis = cms.double(0.07),
+        min_pT = cms.double(120),
+        min_pT_dRcut = cms.double(0.5),
+        minimumProbability = cms.double(0.005),
+        numberOfBTracks = cms.uint32(4),
+        trackIpSign = cms.int32(1),
+        trackQualityClass = cms.string('any'),
+        useVariableJTA = cms.bool(False)
+    )
+
+    process.hltCandidateJetProbabilityComputer = cms.ESProducer("CandidateJetProbabilityESProducer",
+        a_dR = cms.double(-0.001053),
+        a_pT = cms.double(0.005263),
+        b_dR = cms.double(0.6263),
+        b_pT = cms.double(0.3684),
+        deltaR = cms.double(0.3),
+        impactParameterType = cms.int32(0),
+        max_pT = cms.double(500),
+        max_pT_dRcut = cms.double(0.1),
+        max_pT_trackPTcut = cms.double(3),
+        maximumDecayLength = cms.double(5.0),
+        maximumDistanceToJetAxis = cms.double(0.07),
+        min_pT = cms.double(120),
+        min_pT_dRcut = cms.double(0.5),
+        minimumProbability = cms.double(0.005),
+        trackIpSign = cms.int32(1),
+        trackQualityClass = cms.string('any'),
+        useVariableJTA = cms.bool(False)
+    )
+
+    process.hltPfJetBProbabilityBJetTags = cms.EDProducer("JetTagProducer",
+        jetTagComputer = cms.string('hltCandidateJetBProbabilityComputer'),
+        tagInfos = cms.VInputTag(cms.InputTag("hltDeepBLifetimeTagInfosPF"))
+    )
+
+
+    process.hltPfJetProbabilityBJetTags = cms.EDProducer("JetTagProducer",
+        jetTagComputer = cms.string('hltCandidateJetProbabilityComputer'),
+        tagInfos = cms.VInputTag(cms.InputTag("hltDeepBLifetimeTagInfosPF"))
+    )
 
 
     process.HLTBtagDeepCSVSequencePF = cms.Sequence(
@@ -275,5 +326,27 @@ def customize_hltPhase2_BTV(process, name='HLTBTVSequence'):
         +process.hltDeepSecondaryVertexTagInfosPF
         +process.hltDeepCombinedSecondaryVertexBJetTagsInfos
         +process.hltDeepCombinedSecondaryVertexBJetTagsPF)
+
+    process.HLTBtagProbabiltySequencePF = cms.Sequence(
+        process.hltDeepBLifetimeTagInfosPF
+        # +process.hltDeepInclusiveVertexFinderPF
+        # +process.hltDeepInclusiveSecondaryVerticesPF
+        # +process.hltDeepTrackVertexArbitratorPF
+        # +process.hltDeepInclusiveMergedVerticesPF
+        # +process.hltDeepSecondaryVertexTagInfosPF
+        # +process.hltDeepCombinedSecondaryVertexBJetTagsInfos
+        # +process.hltCandidateJetProbabilityComputer
+        +process.hltPfJetProbabilityBJetTags)
+
+    process.HLTBtagBProbabiltySequencePF = cms.Sequence(
+        process.hltDeepBLifetimeTagInfosPF
+        # +process.hltDeepInclusiveVertexFinderPF
+        # +process.hltDeepInclusiveSecondaryVerticesPF
+        # +process.hltDeepTrackVertexArbitratorPF
+        # +process.hltDeepInclusiveMergedVerticesPF
+        # +process.hltDeepSecondaryVertexTagInfosPF
+        # +process.hltDeepCombinedSecondaryVertexBJetTagsInfos
+        # +process.hltCandidateJetBProbabilityComputer
+        +process.hltPfJetBProbabilityBJetTags)
 
     return process

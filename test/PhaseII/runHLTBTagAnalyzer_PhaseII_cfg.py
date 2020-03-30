@@ -79,7 +79,10 @@ if opts.skimTracks:
 
 
 process.noFilter_PFDeepCSV = cms.Path(process.HLTBtagDeepCSVSequencePF)
-process.schedule.extend([process.noFilter_PFDeepCSV])
+process.noFilter_PFProba = cms.Path(process.HLTBtagProbabiltySequencePF)
+process.noFilter_PFBProba = cms.Path(process.HLTBtagBProbabiltySequencePF)
+process.schedule.extend([process.noFilter_PFDeepCSV, process.noFilter_PFProba, process.noFilter_PFBProba])
+# process.schedule.extend([process.noFilter_PFDeepCSV, process.noFilter_PFProba])
 
 
 # max number of events to be processed
@@ -237,7 +240,8 @@ process.btagana.PFJets               = cms.InputTag('hltAK4PFCHSJetsCorrected')
 process.btagana.PFJetTags            = cms.InputTag('hltDeepCombinedSecondaryVertexBJetTagsInfos')
 process.btagana.PFSVs                = cms.InputTag('hltDeepSecondaryVertexTagInfosPF')
 process.btagana.PFJetDeepCSVTags     = cms.InputTag('hltDeepCombinedSecondaryVertexBJetTagsPF:probb')
-
+process.btagana.PFJetBPBJetTags      = cms.InputTag('hltPfJetBProbabilityBJetTags')
+process.btagana.PFJetPBJetTags       = cms.InputTag('hltPfJetProbabilityBJetTags')
 
 
 #---------------------------------------
@@ -249,7 +253,6 @@ process.selectedEvents = eventCounter.clone()
 
 # update JESC via local SQLite file
 from CondCore.CondDB.CondDB_cfi import CondDB
-# CondDBJECFile = CondDB.clone(connect = 'sqlite_file:RecoBTag/PerformanceMeasurements/data/PhaseIIFall17_V5b_MC.db' )
 CondDBJECFile = CondDB.clone(connect = 'sqlite_fip:RecoBTag/PerformanceMeasurements/data/PhaseIIFall17_V5b_MC.db' )
 process.jec = cms.ESSource('PoolDBESSource', CondDBJECFile, toGet = cms.VPSet())
 for _tmp in [

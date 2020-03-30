@@ -2070,7 +2070,7 @@ groupSet = cms.PSet(
         "FatJetInfo.DeepBoostedJetInput_sv_costhetasvpv",
       ),
     ),
- 
+
 
     cms.PSet(
       group       = cms.string("HLTEventInfo"),
@@ -2144,6 +2144,8 @@ groupSet = cms.PSet(
         "PFJet.Jet_SV_multi",
         "PFJet.Jet_CombIVF",
         "PFJet.Jet_DeepCSVb",
+        "PFJet.Jet_Proba",
+        "PFJet.Jet_Bprob",
       ),
     ),
 
@@ -2397,7 +2399,7 @@ groupSet = cms.PSet(
         "PFJet.SV_dir_x",
         "PFJet.SV_dir_y",
         "PFJet.SV_dir_z",
-        
+
                 ),
       ),
 
@@ -3088,4 +3090,3 @@ groupSet = cms.PSet(
 
   )
 )
-

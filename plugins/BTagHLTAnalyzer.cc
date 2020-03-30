@@ -224,9 +224,11 @@ private:
   template<typename JetColl, typename SVColl>
   void processHLTJets(const edm::Handle<JetColl>&,  const edm::EDGetTokenT<ShallowTagCollection>&,  const edm::EDGetTokenT<std::vector<SVColl> >&,
 		      const edm::EDGetTokenT<HLTBTagValue>&, const edm::EDGetTokenT<HLTBTagValue>&,
+		      const edm::EDGetTokenT<HLTBTagValue>&, const edm::EDGetTokenT<HLTBTagValue>&,
 		      const edm::Event&, const edm::EventSetup&, const int) ;
 
   void processHLTPFJets(const edm::Handle<PFJetCollection>&, const edm::EDGetTokenT<ShallowTagCollection>&,
+			const edm::EDGetTokenT<HLTBTagValue>&, const edm::EDGetTokenT<HLTBTagValue>&,
 			const edm::EDGetTokenT<HLTBTagValue>&, const edm::EDGetTokenT<HLTBTagValue>&,
 			const edm::Event&, const edm::EventSetup&, const int) ;
 
@@ -249,6 +251,8 @@ private:
   edm::EDGetTokenT<std::vector<SVTagInfo> > PFSVCollectionTag_;
   edm::EDGetTokenT<HLTBTagValue> PFJetCSVTag_;
   edm::EDGetTokenT<HLTBTagValue> PFJetDeepCSVTag_;
+  edm::EDGetTokenT<HLTBTagValue> PFJetProbTag_;
+  edm::EDGetTokenT<HLTBTagValue> PFJetBProbTag_;
 
   edm::EDGetTokenT<reco::VertexCollection> primaryVertexColl_;
 
@@ -343,6 +347,8 @@ BTagHLTAnalyzerT<IPTI,VTX>::BTagHLTAnalyzerT(const edm::ParameterSet& iConfig):
   PFSVCollectionTag_   = consumes<std::vector<SVTagInfo> >(iConfig.getParameter<edm::InputTag>("PFSVs"));
   PFJetCSVTag_ = consumes<HLTBTagValue>(iConfig.getParameter<edm::InputTag>("PFJetCSVTags"));
   PFJetDeepCSVTag_ = consumes<HLTBTagValue>(iConfig.getParameter<edm::InputTag>("PFJetDeepCSVTags"));
+  PFJetProbTag_ = consumes<HLTBTagValue>(iConfig.getParameter<edm::InputTag>("PFJetPBJetTags"));
+  PFJetBProbTag_ = consumes<HLTBTagValue>(iConfig.getParameter<edm::InputTag>("PFJetBPBJetTags"));
 
   triggerTable_             = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerTable"));
 
@@ -489,7 +495,7 @@ void BTagHLTAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Ev
   bool havePassingPFJet = havePassingJets<PFJetCollection>(pfJetsColl);
 
   if(havePassingPFJet){
-    processHLTPFJets(pfJetsColl, PFJetTagCollectionTag_, PFJetCSVTag_, PFJetDeepCSVTag_, iEvent, iSetup, iJetColl);
+    processHLTPFJets(pfJetsColl, PFJetTagCollectionTag_, PFJetCSVTag_, PFJetDeepCSVTag_, PFJetProbTag_, PFJetBProbTag_, iEvent, iSetup, iJetColl);
   }
 
 
@@ -532,6 +538,7 @@ template<typename IPTI,typename VTX>
 template<typename JetColl, typename SVColl>
 void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jetsColl, const edm::EDGetTokenT<ShallowTagCollection>& jetTagsCollToken, const edm::EDGetTokenT<std::vector<SVColl> >& svCollToken,
 						const edm::EDGetTokenT<HLTBTagValue>& CSVToken, const edm::EDGetTokenT<HLTBTagValue>& deepCSVToken,
+						const edm::EDGetTokenT<HLTBTagValue>& probToken, const edm::EDGetTokenT<HLTBTagValue>& probbToken,
 						const edm::Event& iEvent, const edm::EventSetup& iSetup, const int iJetColl)
 {
 
@@ -556,6 +563,12 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
 
   edm::Handle <HLTBTagValue> jetDeepCSVColl;
   iEvent.getByToken (deepCSVToken, jetDeepCSVColl);
+
+  edm::Handle <HLTBTagValue> probColl;
+  iEvent.getByToken (probToken, probColl);
+
+  edm::Handle <HLTBTagValue> probbColl;
+  iEvent.getByToken (probbToken, probbColl);
 
   for ( typename JetColl::const_iterator jet = jetsColl->begin(); jet != jetsColl->end(); ++jet ) {
 
@@ -598,6 +611,29 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
 	  const reco::Jet* thisDeepCSVJet = jetDeepCSVColl->key(iDeepCSV).get();
 	  if(reco::deltaR( etajet, phijet, thisDeepCSVJet->eta(), thisDeepCSVJet->phi()) < 0.1){
 	    JetInfo[iJetColl].Jet_DeepCSVb[JetInfo[iJetColl].nJet]     = jetDeepCSVColl->value(iDeepCSV);
+	  }
+	}
+      }
+      //
+      //  Fill prob Value
+      //
+      JetInfo[iJetColl].Jet_Proba[JetInfo[iJetColl].nJet]     = -1;
+      if(probColl.isValid()){
+	unsigned int nprob = probColl->size();
+	for(unsigned int iprob= 0; iprob < nprob; ++iprob){
+	  const reco::Jet* thisProbJet = probColl->key(iprob).get();
+	  if(reco::deltaR( etajet, phijet, thisProbJet->eta(), thisProbJet->phi()) < 0.1){
+	    JetInfo[iJetColl].Jet_Proba[JetInfo[iJetColl].nJet]     = probColl->value(iprob);
+	  }
+	}
+      }
+      JetInfo[iJetColl].Jet_Bprob[JetInfo[iJetColl].nJet]     = -1;
+      if(probbColl.isValid()){
+	unsigned int nprobb = probbColl->size();
+	for(unsigned int iprobb= 0; iprobb < nprobb; ++iprobb){
+	  const reco::Jet* thisProbbJet = probbColl->key(iprobb).get();
+	  if(reco::deltaR( etajet, phijet, thisProbbJet->eta(), thisProbbJet->phi()) < 0.1){
+	    JetInfo[iJetColl].Jet_Bprob[JetInfo[iJetColl].nJet]     = probbColl->value(iprobb);
 	  }
 	}
       }
@@ -988,11 +1024,13 @@ void BTagHLTAnalyzerT<IPTI,VTX>::processHLTJets(const edm::Handle<JetColl>& jets
 template<typename IPTI,typename VTX>
 void BTagHLTAnalyzerT<IPTI,VTX>::processHLTPFJets(const edm::Handle<PFJetCollection>& jetsColl, const edm::EDGetTokenT<ShallowTagCollection>& jetTagsCollToken,
 						  const edm::EDGetTokenT<HLTBTagValue>& CSVToken, const edm::EDGetTokenT<HLTBTagValue>& deepCSVToken,
+                          const edm::EDGetTokenT<HLTBTagValue>& probToken, const edm::EDGetTokenT<HLTBTagValue>& bprobToken,
 						  const edm::Event& iEvent, const edm::EventSetup& iSetup, const int iJetColl)
 {
 
 
-  processHLTJets<PFJetCollection, SVTagInfo>(jetsColl,jetTagsCollToken,PFSVCollectionTag_,CSVToken, deepCSVToken, iEvent,iSetup,iJetColl);
+  // processHLTJets<PFJetCollection, SVTagInfo>(jetsColl,jetTagsCollToken,PFSVCollectionTag_,CSVToken, deepCSVToken, iEvent,iSetup,iJetColl);
+  processHLTJets<PFJetCollection, SVTagInfo>(jetsColl,jetTagsCollToken,PFSVCollectionTag_,CSVToken, deepCSVToken, probToken, bprobToken, iEvent,iSetup,iJetColl);
 
   for ( PFJetCollection::const_iterator jet = jetsColl->begin(); jet != jetsColl->end(); ++jet ) {
 
