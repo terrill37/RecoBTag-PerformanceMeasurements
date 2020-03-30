@@ -59,10 +59,10 @@ opts.parseArguments()
 
 if opts.doTrackV0:
     # use the following two lines for tracking V0 setup
-    from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv0_cfg import cms, process
+    from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv00_cfg import cms, process
 else:
     # use the following two lines for tracking V2 setup
-    from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv2_cfg import cms, process
+    from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv02_cfg import cms, process
 
 
 # reset path to EDM input files
@@ -147,13 +147,7 @@ if opts.inputFiles:
    process.source.fileNames = opts.inputFiles
 else:
    process.source.fileNames = [
-     # "file:/eos/cms/store/mc/PhaseIITDRSpring19DR/TTbar_14TeV_TuneCP5_Pythia8/GEN-SIM-DIGI-RAW/PU200_106X_upgrade2023_realistic_v3_ext1-v3/60000/A7DE6079-B3AE-4743-A5F3-2050EDEB8383.root",
-     # "/store/relval/CMSSW_11_0_0/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/110X_mcRun4_realistic_v2_2026D49noPU-v2/20000/26BAF436-18BA-4843-95E6-100394440248.root",
-     # "/store/relval/CMSSW_11_0_0/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_110X_mcRun4_realistic_v3_2026D49PU200-v1/20000/F4CA9166-52A2-474F-8D30-9B70B4B28361.root",
-     # "/store/mc/Phase2HLTTDRWinter20DIGI/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/GEN-SIM-DIGI-RAW/PU200_castor_110X_mcRun4_realistic_v3-v2/10000/05BFAD3E-3F91-1843-ABA2-2040324C7567.root",
-     "/store/mc/Phase2HLTTDRWinter20DIGI/TTTo2L2Nu_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v2/40002/A3B12AEC-424E-8B4E-BCA3-08002C3A4829.root",
-     # /RelValTTbar_14TeV/CMSSW_11_0_0_pre13-110X_mcRun4_realistic_v2_2026D49noPU-v1/GEN-SIM-DIGI-RAW",
-     # "/store/relval/CMSSW_11_0_0_pre13/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/110X_mcRun4_realistic_v2_2026D49noPU-v1/20000/D7F3470F-864E-944B-922E-7178756F4652.root",
+     "/store/mc/Phase2HLTTDRWinter20DIGI/TTToSemiLepton_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/NoPU_110X_mcRun4_realistic_v3-v2/20000/2FA69DD4-0651-084E-87B6-E5F38B007D5D.root",
    ]
 
 
