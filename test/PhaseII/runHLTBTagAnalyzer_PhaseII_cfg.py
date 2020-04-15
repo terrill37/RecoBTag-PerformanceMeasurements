@@ -30,10 +30,10 @@ opts.register('logs', False,
               vpo.VarParsing.varType.bool,
               'create log files configured via MessageLogger')
 
-opts.register('doTrackV0', False,
+opts.register('reco', 'hltPhase2_TRKv06',
               vpo.VarParsing.multiplicity.singleton,
-              vpo.VarParsing.varType.bool,
-              'Use TrackingV0 instead of V2')
+              vpo.VarParsing.varType.string,
+              'Which tracking version to run')
 
 opts.register('wantSummary', False,
               vpo.VarParsing.multiplicity.singleton,
@@ -45,7 +45,7 @@ opts.register('dumpPython', None,
               vpo.VarParsing.varType.string,
               'Path to python file with content of cms.Process')
 
-opts.register('htrk', False,
+opts.register('htrk', True,
               vpo.VarParsing.multiplicity.singleton,
               vpo.VarParsing.varType.bool,
               'added monitoring histograms for selected Tracks and Vertices')
@@ -57,13 +57,15 @@ opts.register('skimTracks', False,
 
 opts.parseArguments()
 
-if opts.doTrackV0:
-    # use the following two lines for tracking V0 setup
-    from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv00_cfg import cms, process
-else:
-    # use the following two lines for tracking V2 setup
-    from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv02_cfg import cms, process
 
+if opts.reco == 'hltPhase2_TRKv02':
+   from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv00_cfg import cms, process
+elif opts.reco == 'hltPhase2_TRKv00':
+   from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv00_cfg import cms, process
+elif opts.reco == 'hltPhase2_TRKv06':
+   from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv06_cfg import cms, process
+else:
+   raise RuntimeError('invalid argument for option "reco": "'+opts.reco+'"')
 
 # reset path to EDM input files
 process.source.fileNames = []
@@ -82,7 +84,6 @@ process.noFilter_PFDeepCSV = cms.Path(process.HLTBtagDeepCSVSequencePF)
 process.noFilter_PFProba = cms.Path(process.HLTBtagProbabiltySequencePF)
 process.noFilter_PFBProba = cms.Path(process.HLTBtagBProbabiltySequencePF)
 process.schedule.extend([process.noFilter_PFDeepCSV, process.noFilter_PFProba, process.noFilter_PFBProba])
-# process.schedule.extend([process.noFilter_PFDeepCSV, process.noFilter_PFProba])
 
 
 # max number of events to be processed
@@ -198,14 +199,7 @@ print "Running with globalTag: %s"%(process.GlobalTag.globaltag)
 
 
 
-outFilename = 'JetTree'
-## Define the output file name
-# if process.btagana.runOnData:
-#     outFilename += '_data'
-# else :
-outFilename += '_mc'
-
-outFilename += '.root'
+outFilename = 'JetTree_mc.root'
 
 
 ## Output file
@@ -330,6 +324,6 @@ print 'wantSummary =', opts.wantSummary
 print 'process.GlobalTag.globaltag =', process.GlobalTag.globaltag
 print 'dumpPython =', opts.dumpPython
 print 'doTrackHistos =', opts.htrk
-print 'doTrackingV0 =', opts.doTrackV0
+print 'reco =', opts.reco
 print 'useSkimmedTracks =', opts.skimTracks
 print '\n-------------------------------'
