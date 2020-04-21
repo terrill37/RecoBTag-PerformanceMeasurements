@@ -44,7 +44,8 @@ options.register('minJetPt', 20.0,
     "Minimum jet pt (default is 20)"
 )
 
-options.register('globalTag', 'FIXME',
+#options.register('globalTag', 'FIXME',
+options.register('globalTag', '110X_mcRun3_2021_realistic_v6',
     VarParsing.multiplicity.singleton,
     VarParsing.varType.string,
     "global tag, no default value provided"
@@ -67,15 +68,17 @@ process = cms.Process("MYHLT")
 
 process.source = cms.Source("PoolSource",
     #fileNames = cms.untracked.vstring('root://cms-xrd-global.cern.ch//store/data/Run2018D/MuonEG/RAW/v1/000/321/414/00000/66EBA7E1-DDA2-E811-A897-FA163E587FED.root'),
-    #fileNames = cms.untracked.vstring('file:66EBA7E1-DDA2-E811-A897-FA163E587FED.root'),
-    fileNames = cms.untracked.vstring(),
+    fileNames = cms.untracked.vstring('root://cms-xrd-global.cern.ch//store/mc/Run3Winter20DRPremixMiniAOD/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-RAW/110X_mcRun3_2021_realistic_v6-v2/20000/FFD3C59C-0D1E-E04A-8DA6-4E51A5142321.root'),
+                            
+#Luca    fileNames = cms.untracked.vstring(),
     inputCommands = cms.untracked.vstring('keep *'),
     #lumisToProcess = cms.untracked.VLuminosityBlockRange("321414:935-321414:945"),
     #secondaryFileNames = cms.untracked.vstring('root://cms-xrd-global.cern.ch//store/data/Run2018D/MuonEG/MINIAOD/PromptReco-v2/000/321/414/00000/58F2E428-96A4-E811-846A-FA163E3A858B.root'),
     skipEvents = cms.untracked.uint32(0)
 )
 process.HLTConfigVersion = cms.PSet(
-    tableName = cms.string('/users/koschwei/CMSSW_10_1_7/HLT_GRunV56/V3')
+#    tableName = cms.string('/users/koschwei/CMSSW_10_1_7/HLT_GRunV56/V3')
+    tableName = cms.string('/dev/CMSSW_11_0_0/GRun/V13')
 )
 
 process.HLTIter0GroupedCkfTrajectoryBuilderIT = cms.PSet(
