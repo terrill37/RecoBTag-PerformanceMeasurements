@@ -35,6 +35,11 @@ opts.register('reco', 'hltPhase2_TRKv06',
               vpo.VarParsing.varType.string,
               'Which tracking version to run')
 
+opts.register('outName', 'JetTree_mc.root',
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.string,
+              'Name of the output root file')
+
 opts.register('wantSummary', False,
               vpo.VarParsing.multiplicity.singleton,
               vpo.VarParsing.varType.bool,
@@ -45,10 +50,15 @@ opts.register('dumpPython', None,
               vpo.VarParsing.varType.string,
               'Path to python file with content of cms.Process')
 
-opts.register('htrk', True,
+opts.register('trkdqm', True,
               vpo.VarParsing.multiplicity.singleton,
               vpo.VarParsing.varType.bool,
               'added monitoring histograms for selected Tracks and Vertices')
+
+opts.register('pfdqm', True,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.bool,
+              'added monitoring histograms for selected PF-Candidates')
 
 opts.register('skimTracks', False,
               vpo.VarParsing.multiplicity.singleton,
@@ -58,12 +68,18 @@ opts.register('skimTracks', False,
 opts.parseArguments()
 
 
-if opts.reco == 'hltPhase2_TRKv02':
+if opts.reco == 'hltPhase2_TRKv00':
    from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv00_cfg import cms, process
-elif opts.reco == 'hltPhase2_TRKv00':
-   from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv00_cfg import cms, process
+elif opts.reco == 'hltPhase2_TRKv02':
+   from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv02_cfg import cms, process
 elif opts.reco == 'hltPhase2_TRKv06':
    from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv06_cfg import cms, process
+elif opts.reco == 'hltPhase2_TRKv00_TICL':
+   from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv00_TICL_cfg import cms, process
+elif opts.reco == 'hltPhase2_TRKv02_TICL':
+   from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv02_TICL_cfg import cms, process
+elif opts.reco == 'hltPhase2_TRKv06_TICL':
+   from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv06_TICL_cfg import cms, process
 else:
    raise RuntimeError('invalid argument for option "reco": "'+opts.reco+'"')
 
@@ -199,7 +215,8 @@ print "Running with globalTag: %s"%(process.GlobalTag.globaltag)
 
 
 
-outFilename = 'JetTree_mc.root'
+#~ outFilename = 'JetTree_mc.root'
+outFilename = opts.outName
 
 
 ## Output file
@@ -269,9 +286,13 @@ for _tmp in [
 process.es_prefer_jec = cms.ESPrefer('PoolDBESSource', 'jec')
 
 # Tracking Monitoring
-if opts.htrk:
-   process.reconstruction_pixelTrackingOnly_step = cms.Path(process.reconstruction_pixelTrackingOnly)
-   process.schedule.extend([process.reconstruction_pixelTrackingOnly_step])
+if opts.trkdqm:
+	
+   if opts.reco in ['hltPhase2_TRKv00', 'hltPhase2_TRKv00_TICL', 'hltPhase2_TRKv02', 'hltPhase2_TRKv02_TICL']:
+      process.reconstruction_pixelTrackingOnly_step = cms.Path(process.reconstruction_pixelTrackingOnly)
+      process.schedule.extend([process.reconstruction_pixelTrackingOnly_step])
+   #~ process.reconstruction_pixelTrackingOnly_step = cms.Path(process.reconstruction_pixelTrackingOnly)
+   #~ process.schedule.extend([process.reconstruction_pixelTrackingOnly_step])
 
    from JMETriggerAnalysis.Common.TrackHistogrammer_cfi import TrackHistogrammer
    process.TrackHistograms_pixelTracks = TrackHistogrammer.clone(src = 'pixelTracks')
@@ -297,6 +318,45 @@ if opts.htrk:
    process.trkMonitoringEndPath = cms.EndPath(process.trkMonitoringSeq)
    process.schedule.extend([process.trkMonitoringEndPath])
 
+if opts.pfdqm:
+
+   from JMETriggerAnalysis.Common.pfCandidateHistogrammerRecoPFCandidate_cfi import pfCandidateHistogrammerRecoPFCandidate
+   from JMETriggerAnalysis.Common.pfCandidateHistogrammerPatPackedCandidate_cfi import pfCandidateHistogrammerPatPackedCandidate
+
+   _candTags = [
+     ('_simPFCands', 'simPFProducer', '', pfCandidateHistogrammerRecoPFCandidate),
+     ('_hltPFCands', 'particleFlowTmp', '', pfCandidateHistogrammerRecoPFCandidate),
+     ('_hltPuppiCands', 'hltPuppi', '(pt > 0)', pfCandidateHistogrammerRecoPFCandidate),
+     #~ ('_offlinePFCands', 'packedPFCandidates', '', pfCandidateHistogrammerPatPackedCandidate),
+   ]
+
+   _regTags = [
+     ['', ''],
+     ['_HB'   , '(0.0<=abs(eta) && abs(eta)<1.5)'],
+     ['_HGCal', '(1.5<=abs(eta) && abs(eta)<3.0)'],
+     ['_HF'   , '(3.0<=abs(eta) && abs(eta)<5.0)'],
+   ]
+
+   _pidTags = [
+     ['', ''],
+     ['_chargedHadrons', '(abs(pdgId) == 211)'],
+     ['_neutralHadrons', '(abs(pdgId) == 130)'],
+     ['_photons'       , '(abs(pdgId) ==  22)'],
+   ]
+
+   process.pfMonitoringSeq = cms.Sequence()
+   for _candTag in _candTags:
+     for _regTag in _regTags:
+       for _pidTag in _pidTags:
+         _modName = 'PFCandidateHistograms'+_candTag[0]+_regTag[0]+_pidTag[0]
+         setattr(process, _modName, _candTag[3].clone(
+           src = _candTag[1],
+           cut = ' && '.join([_tmp for _tmp in [_candTag[2], _regTag[1], _pidTag[1]] if _tmp]),
+         ))
+         process.pfMonitoringSeq += getattr(process, _modName)
+
+   process.pfMonitoringEndPath = cms.EndPath(process.pfMonitoringSeq)
+   process.schedule.extend([process.pfMonitoringEndPath])
 
 
 process.p = cms.Path(
@@ -323,7 +383,8 @@ print 'logs =', opts.logs
 print 'wantSummary =', opts.wantSummary
 print 'process.GlobalTag.globaltag =', process.GlobalTag.globaltag
 print 'dumpPython =', opts.dumpPython
-print 'doTrackHistos =', opts.htrk
+print 'doTrackHistos =', opts.trkdqm
+print 'doParticleFlowHistos =', opts.pfdqm
 print 'reco =', opts.reco
 print 'useSkimmedTracks =', opts.skimTracks
 print '\n-------------------------------'
