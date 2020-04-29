@@ -23082,13 +23082,13 @@ process.selectedEvents = eventCounter.clone()
 #    process.primaryVertexFilter
 #)
 
-#Luca # update the PF configuration
-#Luca from RecoBTag.PerformanceMeasurements.customise import customize_HLT_trkIter2GlobalPtSeed0p9
-#Luca process = customize_HLT_trkIter2GlobalPtSeed0p9(process)
-#Luca 
+# update the PF configuration
+from RecoBTag.PerformanceMeasurements.customise import customize_HLT_trkIter2GlobalPtSeed0p9
+process = customize_HLT_trkIter2GlobalPtSeed0p9(process)
+ 
 # update the b-tagging configuration
-#Luca from RecoBTag.PerformanceMeasurements.customise import customize_HLT_trkIter2GlobalPtSeed0p9ForBTag
-#Luca process = customize_HLT_trkIter2GlobalPtSeed0p9ForBTag(process)
+from RecoBTag.PerformanceMeasurements.customise import customize_HLT_trkIter2GlobalPtSeed0p9ForBTag
+process = customize_HLT_trkIter2GlobalPtSeed0p9ForBTag(process)
 
 ## Define analyzer sequence
 process.analyzerSeq = cms.Sequence( )
