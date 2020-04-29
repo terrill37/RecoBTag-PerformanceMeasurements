@@ -58,7 +58,7 @@ options.register('groups', [],
 
 
 ## 'maxEvents' is already registered by the Framework, changing default value
-options.setDefault('maxEvents', 100)
+options.setDefault('maxEvents', 500)
 
 options.parseArguments()
 
@@ -13538,30 +13538,29 @@ process.hltIter2PFlowPixelSeedsForBTag = cms.EDProducer("SeedCreatorFromRegionCo
     seedingHitSets = cms.InputTag("hltIter2PFlowPixelHitTripletsForBTag")
 )
 
-
+previous track process
 process.hltIter2PFlowPixelTrackingRegions = cms.EDProducer("CandidateSeededTrackingRegionsEDProducer",
     RegionPSet = cms.PSet(
-        beamSpot = cms.InputTag("hltOnlineBeamSpot"),
-        deltaEta = cms.double(0.8),
-        deltaPhi = cms.double(0.8),
-        input = cms.InputTag("hltIter1TrackAndTauJets4Iter2"),
-        maxNRegions = cms.int32(100),
-        maxNVertices = cms.int32(10),
-        measurementTrackerName = cms.InputTag("hltIter2MaskedMeasurementTrackerEvent"),
-        mode = cms.string('VerticesFixed'),
-        nSigmaZBeamSpot = cms.double(3.0),
-        nSigmaZVertex = cms.double(4.0),
-        originRadius = cms.double(0.025),
-        precise = cms.bool(True),
-        ptMin = cms.double(0.4),
-        searchOpt = cms.bool(True),
-        vertexCollection = cms.InputTag("hltTrimmedPixelVertices"),
-        whereToUseMeasurementTracker = cms.string('ForSiStrips'),
-        zErrorBeamSpot = cms.double(15.0),
-        zErrorVetex = cms.double(0.05)
+      beamSpot = cms.InputTag("hltOnlineBeamSpot"),
+      deltaEta = cms.double(0.8),
+      deltaPhi = cms.double(0.8),
+      input = cms.InputTag("hltIter1TrackAndTauJets4Iter2"),
+      maxNRegions = cms.int32(100),
+      maxNVertices = cms.int32(10),
+      measurementTrackerName = cms.InputTag("hltIter2MaskedMeasurementTrackerEvent"),
+      mode = cms.string('VerticesFixed'),
+      nSigmaZBeamSpot = cms.double(3.0),
+      nSigmaZVertex = cms.double(4.0),
+      originRadius = cms.double(0.025),
+      precise = cms.bool(True),
+      ptMin = cms.double(0.4),
+      searchOpt = cms.bool(True),
+      vertexCollection = cms.InputTag("hltTrimmedPixelVertices"),
+      whereToUseMeasurementTracker = cms.string('ForSiStrips'),
+      zErrorBeamSpot = cms.double(15.0),
+      zErrorVetex = cms.double(0.05)
     )
 )
-
 
 process.hltIter2PFlowPixelTrackingRegionsForBTag = cms.EDProducer("CandidateSeededTrackingRegionsEDProducer",
     RegionPSet = cms.PSet(
@@ -13585,6 +13584,24 @@ process.hltIter2PFlowPixelTrackingRegionsForBTag = cms.EDProducer("CandidateSeed
         zErrorVetex = cms.double(0.3)
     )
 )
+
+process.hltIter2PFlowPixelTrackingRegionsForBTag = cms.EDProducer( 'GlobalTrackingRegionWithVerticesEDProducer',
+    RegionPSet = cms.PSet( 
+    useFixedError = cms.bool( True ),
+    nSigmaZ = cms.double( 0.0 ),
+    VertexCollection = cms.InputTag( 'hltFastPVPixelVertices' ),
+    beamSpot = cms.InputTag( 'hltOnlineBeamSpot' ),
+    useFoundVertices = cms.bool( True ),
+    fixedError = cms.double( 0.2 ),
+    sigmaZVertex = cms.double( 3.0 ),
+    useFakeVertices = cms.bool( False ),
+    ptMin = cms.double( 0.9 ),
+    originRadius = cms.double( 0.3 ),
+    precise = cms.bool( True ),
+    useMultipleScattering = cms.bool( False )
+  )
+)
+
 
 
 process.hltIter2PFlowTrackCutClassifier = cms.EDProducer("TrackCutClassifier",
@@ -23065,6 +23082,13 @@ process.selectedEvents = eventCounter.clone()
 #    process.primaryVertexFilter
 #)
 
+#Luca # update the PF configuration
+#Luca from RecoBTag.PerformanceMeasurements.customise import customize_HLT_trkIter2GlobalPtSeed0p9
+#Luca process = customize_HLT_trkIter2GlobalPtSeed0p9(process)
+#Luca 
+# update the b-tagging configuration
+#Luca from RecoBTag.PerformanceMeasurements.customise import customize_HLT_trkIter2GlobalPtSeed0p9ForBTag
+#Luca process = customize_HLT_trkIter2GlobalPtSeed0p9ForBTag(process)
 
 ## Define analyzer sequence
 process.analyzerSeq = cms.Sequence( )
@@ -23080,6 +23104,8 @@ process.p = cms.Path(
     * process.analyzerSeq,
     process.tsk
 )
+
+
 
 #process.FULLOutput = cms.EndPath(process.hltOutputFULL, process.tsk)
 
