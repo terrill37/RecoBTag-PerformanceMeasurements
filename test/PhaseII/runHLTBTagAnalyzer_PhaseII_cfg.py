@@ -101,6 +101,11 @@ process.noFilter_PFProba = cms.Path(process.HLTBtagProbabiltySequencePF)
 process.noFilter_PFBProba = cms.Path(process.HLTBtagBProbabiltySequencePF)
 process.schedule.extend([process.noFilter_PFDeepCSV, process.noFilter_PFProba, process.noFilter_PFBProba])
 
+process.noFilter_PFDeepCSVPuppi = cms.Path(process.HLTBtagDeepCSVSequencePFPuppi)
+process.noFilter_PFProbaPuppi = cms.Path(process.HLTBtagProbabiltySequencePFPuppi)
+process.noFilter_PFBProbaPuppi = cms.Path(process.HLTBtagBProbabiltySequencePFPuppi)
+process.schedule.extend([process.noFilter_PFDeepCSVPuppi, process.noFilter_PFProbaPuppi, process.noFilter_PFBProbaPuppi])
+
 
 # max number of events to be processed
 process.maxEvents.input = opts.maxEvents
@@ -200,6 +205,8 @@ for requiredGroup in groups:
           var = var.split(".")[1]
         if "PFJet." in var:
           var = var.split(".")[1]
+        if "PuppiJet." in var:
+          var = var.split(".")[1]
         options_to_change.update([i for i in variableDict[var].runOptions])
       found=True
       break
@@ -254,6 +261,13 @@ process.btagana.PFJetDeepCSVTags     = cms.InputTag('hltDeepCombinedSecondaryVer
 process.btagana.PFJetBPBJetTags      = cms.InputTag('hltPfJetBProbabilityBJetTags')
 process.btagana.PFJetPBJetTags       = cms.InputTag('hltPfJetProbabilityBJetTags')
 
+process.btagana.PuppiJets            = cms.InputTag('hltAK4PuppiJetsCorrected')
+process.btagana.PuppiJetTags         = cms.InputTag('hltDeepCombinedSecondaryVertexBJetTagsInfosPuppi')
+process.btagana.PuppiSVs             = cms.InputTag('hltDeepSecondaryVertexTagInfosPFPuppi')
+process.btagana.PuppiJetDeepCSVTags  = cms.InputTag('hltDeepCombinedSecondaryVertexBJetTagsPFPuppi:probb')
+process.btagana.PuppiJetBPBJetTags   = cms.InputTag('hltPfJetBProbabilityBJetTagsPuppi')
+process.btagana.PuppiJetPBJetTags    = cms.InputTag('hltPfJetProbabilityBJetTagsPuppi')
+process.btagana.PuppiJetCSVTags      = cms.InputTag('hltCombinedSecondaryVertexBJetTagsPFPuppi')
 
 #---------------------------------------
 ## Event counter
@@ -287,12 +301,9 @@ process.es_prefer_jec = cms.ESPrefer('PoolDBESSource', 'jec')
 
 # Tracking Monitoring
 if opts.trkdqm:
-	
    if opts.reco in ['hltPhase2_TRKv00', 'hltPhase2_TRKv00_TICL', 'hltPhase2_TRKv02', 'hltPhase2_TRKv02_TICL']:
       process.reconstruction_pixelTrackingOnly_step = cms.Path(process.reconstruction_pixelTrackingOnly)
       process.schedule.extend([process.reconstruction_pixelTrackingOnly_step])
-   #~ process.reconstruction_pixelTrackingOnly_step = cms.Path(process.reconstruction_pixelTrackingOnly)
-   #~ process.schedule.extend([process.reconstruction_pixelTrackingOnly_step])
 
    from JMETriggerAnalysis.Common.TrackHistogrammer_cfi import TrackHistogrammer
    process.TrackHistograms_pixelTracks = TrackHistogrammer.clone(src = 'pixelTracks')

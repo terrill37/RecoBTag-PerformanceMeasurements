@@ -254,6 +254,14 @@ private:
   edm::EDGetTokenT<HLTBTagValue> PFJetProbTag_;
   edm::EDGetTokenT<HLTBTagValue> PFJetBProbTag_;
 
+  edm::EDGetTokenT<PFJetCollection> PuppiJetCollectionTag_;
+  edm::EDGetTokenT<ShallowTagCollection> PuppiJetTagCollectionTag_;
+  edm::EDGetTokenT<std::vector<SVTagInfo> > PuppiSVCollectionTag_;
+  edm::EDGetTokenT<HLTBTagValue> PuppiJetCSVTag_;
+  edm::EDGetTokenT<HLTBTagValue> PuppiJetDeepCSVTag_;
+  edm::EDGetTokenT<HLTBTagValue> PuppiJetProbTag_;
+  edm::EDGetTokenT<HLTBTagValue> PuppiJetBProbTag_;
+
   edm::EDGetTokenT<reco::VertexCollection> primaryVertexColl_;
 
   TFile*  rootFile_;
@@ -350,6 +358,14 @@ BTagHLTAnalyzerT<IPTI,VTX>::BTagHLTAnalyzerT(const edm::ParameterSet& iConfig):
   PFJetProbTag_ = consumes<HLTBTagValue>(iConfig.getParameter<edm::InputTag>("PFJetPBJetTags"));
   PFJetBProbTag_ = consumes<HLTBTagValue>(iConfig.getParameter<edm::InputTag>("PFJetBPBJetTags"));
 
+  PuppiJetCollectionTag_   = consumes<PFJetCollection>(iConfig.getParameter<edm::InputTag>("PuppiJets"));
+  PuppiJetTagCollectionTag_ = consumes<ShallowTagCollection>(iConfig.getParameter<edm::InputTag>("PuppiJetTags"));
+  PuppiSVCollectionTag_   = consumes<std::vector<SVTagInfo> >(iConfig.getParameter<edm::InputTag>("PuppiSVs"));
+  PuppiJetCSVTag_ = consumes<HLTBTagValue>(iConfig.getParameter<edm::InputTag>("PuppiJetCSVTags"));
+  PuppiJetDeepCSVTag_ = consumes<HLTBTagValue>(iConfig.getParameter<edm::InputTag>("PuppiJetDeepCSVTags"));
+  PuppiJetProbTag_ = consumes<HLTBTagValue>(iConfig.getParameter<edm::InputTag>("PuppiJetPBJetTags"));
+  PuppiJetBProbTag_ = consumes<HLTBTagValue>(iConfig.getParameter<edm::InputTag>("PuppiJetBPBJetTags"));
+
   triggerTable_             = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerTable"));
 
   triggerPathNames_        = iConfig.getParameter<std::vector<std::string> >("HLTTriggerPathNames");
@@ -370,9 +386,11 @@ BTagHLTAnalyzerT<IPTI,VTX>::BTagHLTAnalyzerT(const edm::ParameterSet& iConfig):
   //--------------------------------------
   // jet information
   //--------------------------------------
-  JetInfo.reserve(2);
+  JetInfo.reserve(3);
   // JetInfo[0].RegisterBranches(smalltree, variableParser, "CaloJet");
   JetInfo[1].RegisterBranches(smalltree, variableParser, "PFJet");
+  JetInfo[2].RegisterBranches(smalltree, variableParser, "PuppiJet");
+  // JetInfo[3].RegisterBranches(smalltree, variableParser, "PFClusterJet");
 
 }
 
@@ -496,6 +514,16 @@ void BTagHLTAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Ev
 
   if(havePassingPFJet){
     processHLTPFJets(pfJetsColl, PFJetTagCollectionTag_, PFJetCSVTag_, PFJetDeepCSVTag_, PFJetProbTag_, PFJetBProbTag_, iEvent, iSetup, iJetColl);
+  }
+
+  ++iJetColl;
+
+  edm::Handle <PFJetCollection> puppiJetsColl;
+  iEvent.getByToken (PuppiJetCollectionTag_, puppiJetsColl);
+  bool havePassingPuppiJet = havePassingJets<PFJetCollection>(puppiJetsColl);
+
+  if(havePassingPuppiJet){
+    processHLTPFJets(puppiJetsColl, PuppiJetTagCollectionTag_, PuppiJetCSVTag_, PuppiJetDeepCSVTag_, PuppiJetProbTag_, PuppiJetBProbTag_, iEvent, iSetup, iJetColl);
   }
 
 
