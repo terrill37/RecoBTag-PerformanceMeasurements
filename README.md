@@ -3,8 +3,8 @@
 ## Software setup
 
 ```
-cmsrel CMSSW_10_2_11
-cd CMSSW_10_2_11/src
+cmsrel CMSSW_11_1_0_pre5
+cd CMSSW_11_1_0_pre5/src
 cmsenv
 
 setenv CMSSW_GIT_REFERENCE /cvmfs/cms.cern.ch/cmssw.git.daily
@@ -12,14 +12,21 @@ git cms-init
 
 git cms-addpkg RecoBTag
 git cms-addpkg PhysicsTools/PatAlgos
-git cms-merge-topic rauser:PrunedTraining_NoPuppi_10_2_11
-git clone -b PrunedTraining_NoPuppi https://github.com/emilbols/RecoBTag-Combined RecoBTag/Combined/data
+#git cms-merge-topic rauser:PrunedTraining_NoPuppi_10_2_11
+#git clone -b PrunedTraining_NoPuppi https://github.com/emilbols/RecoBTag-Combined RecoBTag/Combined/data
 
-git clone -b 10_2_X_v1.06 --depth 1 https://github.com/cms-btv-pog/RecoBTag-PerformanceMeasurements.git RecoBTag/PerformanceMeasurements
+git clone -b your_branch_name --depth 1 https://github.com/cms-btv-pog/RecoBTag-PerformanceMeasurements.git RecoBTag/PerformanceMeasurements
 
-scram b -j8
+scram b -j 8
 
 ```
+
+For running on the HLT one needs to use RAW and there are very few options availbe here is the command I have working:
+
+```
+cmsRun ./runHLTBTagAnalyzer_cfg.py runOnData=False groups="HLTEventInfo,HLTJetInfo,HLTTagVar,HLTJetTrack,HLTJetSV,HLTCSVTagVar"
+```
+
 
 The ntuplizer can be run and configured through ```RecoBTag/PerformanceMeasurements/test/runBTagAnalyzer_cfg.py```, to run it for the 2018 Ultimate SF campaign:
 
@@ -40,8 +47,3 @@ The new variable configuration can be customized in the file ```RecoBTag/Perform
 New variables need also to be added (apart from adding them in the code) in ```RecoBTag/PerformanceMeasurements/python/variables_cfi.py```
 
 
-For running on the HLT one needs to use RAW and there are very few options availbe here is the command I have working:
-
-```
-cmsRun ./runHLTBTagAnalyzer_cfg.py runOnData=True groups="HLTEventInfo,HLTJetInfo,HLTTagVar,HLTJetTrack,HLTJetSV,HLTCSVTagVar"
-```

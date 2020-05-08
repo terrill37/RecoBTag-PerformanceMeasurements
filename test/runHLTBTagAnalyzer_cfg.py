@@ -13538,7 +13538,7 @@ process.hltIter2PFlowPixelSeedsForBTag = cms.EDProducer("SeedCreatorFromRegionCo
     seedingHitSets = cms.InputTag("hltIter2PFlowPixelHitTripletsForBTag")
 )
 
-previous track process
+
 process.hltIter2PFlowPixelTrackingRegions = cms.EDProducer("CandidateSeededTrackingRegionsEDProducer",
     RegionPSet = cms.PSet(
       beamSpot = cms.InputTag("hltOnlineBeamSpot"),
@@ -13595,7 +13595,7 @@ process.hltIter2PFlowPixelTrackingRegionsForBTag = cms.EDProducer( 'GlobalTracki
     fixedError = cms.double( 0.2 ),
     sigmaZVertex = cms.double( 3.0 ),
     useFakeVertices = cms.bool( False ),
-    ptMin = cms.double( 0.9 ),
+    ptMin = cms.double( 0.4 ),
     originRadius = cms.double( 0.3 ),
     precise = cms.bool( True ),
     useMultipleScattering = cms.bool( False )
