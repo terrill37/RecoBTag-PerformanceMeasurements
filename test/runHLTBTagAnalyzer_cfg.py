@@ -13585,25 +13585,6 @@ process.hltIter2PFlowPixelTrackingRegionsForBTag = cms.EDProducer("CandidateSeed
     )
 )
 
-process.hltIter2PFlowPixelTrackingRegionsForBTag = cms.EDProducer( 'GlobalTrackingRegionWithVerticesEDProducer',
-    RegionPSet = cms.PSet( 
-    useFixedError = cms.bool( True ),
-    nSigmaZ = cms.double( 0.0 ),
-    VertexCollection = cms.InputTag( 'hltFastPVPixelVertices' ),
-    beamSpot = cms.InputTag( 'hltOnlineBeamSpot' ),
-    useFoundVertices = cms.bool( True ),
-    fixedError = cms.double( 0.2 ),
-    sigmaZVertex = cms.double( 3.0 ),
-    useFakeVertices = cms.bool( False ),
-    ptMin = cms.double( 0.4 ),
-    originRadius = cms.double( 0.3 ),
-    precise = cms.bool( True ),
-    useMultipleScattering = cms.bool( False )
-  )
-)
-
-
-
 process.hltIter2PFlowTrackCutClassifier = cms.EDProducer("TrackCutClassifier",
     beamspot = cms.InputTag("hltOnlineBeamSpot"),
     ignoreVertices = cms.bool(False),
