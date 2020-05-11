@@ -809,7 +809,8 @@ process.source = cms.Source("PoolSource",
 if options.miniAOD:
     process.source.fileNames = [
         #/QCD_Pt-1000toInf_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIFall17MiniAOD-94X_mc2017_realistic_v10-v1/MINIAODSIM
-        '/store/mc/RunIIFall17MiniAOD/QCD_Pt-1000toInf_MuEnrichedPt5_TuneCP5_13TeV_pythia8/MINIAODSIM/94X_mc2017_realistic_v10-v1/00000/C8E934F8-1C06-E811-888D-0242AC130002.root'
+        #Luca '/store/mc/RunIIFall17MiniAOD/QCD_Pt-1000toInf_MuEnrichedPt5_TuneCP5_13TeV_pythia8/MINIAODSIM/94X_mc2017_realistic_v10-v1/00000/C8E934F8-1C06-E811-888D-0242AC130002.root'
+        '/store/mc/Run3Winter20DRPremixMiniAOD/TT_TuneCP5_14TeV-powheg-pythia8/MINIAODSIM/110X_mcRun3_2021_realistic_v6-v2/20000/FCDB1A9C-FC38-FA40-B41E-0DA8F93702AD.root'
     ]
     if options.runOnData:
         process.source.fileNames = [
