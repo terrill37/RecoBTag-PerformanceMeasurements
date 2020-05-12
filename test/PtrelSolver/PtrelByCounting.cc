@@ -145,4 +145,3 @@ bool PtrelByCounting::compute(
     }
     return true;
 }
-

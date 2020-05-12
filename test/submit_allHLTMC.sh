@@ -1,7 +1,5 @@
-
 #!/bin/bash
 
-#echo "!!!! WARNING: Submitting for Data!!!!"
 echo "!!!! WARNING: Submitting for MC!!!"
 python submit_allHLT.py \
   runHLTBTagAnalyzer_cfg.py \

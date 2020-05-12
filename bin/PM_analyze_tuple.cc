@@ -28,7 +28,6 @@
 #include "FWCore/Common/interface/TriggerResultsByName.h"
 #include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 #include "FWCore/ParameterSet/interface/ProcessDesc.h"
-//Luca #include "FWCore/PythonParameterSet/interface/PythonProcessDesc.h"
 #include "FWCore/PythonParameterSet/interface/PyBind11ProcessDesc.h"
 #include "PhysicsTools/FWLite/interface/CommandLineParser.h"
 #include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
@@ -56,10 +55,9 @@ bool jsonContainsEvent (const std::vector< edm::LuminosityBlockRange > &jsonVec,
     edm::LuminosityBlockID lumiID (event.id().run(),
                                    event.id().luminosityBlock());
 
-//Luca     std::vector< edm::LuminosityBlockRange >::const_iterator iter =
-//Luca         std::find_if(jsonVec.begin(), jsonVec.end(),
-//Luca                      boost::bind(funcPtr, _1, lumiID) );
-    std::vector< edm::LuminosityBlockRange >::const_iterator iter =std::find_if(jsonVec.begin(), jsonVec.end(),std::bind(funcPtr, std::placeholders::_1, lumiID) );
+    std::vector< edm::LuminosityBlockRange >::const_iterator iter =
+        std::find_if(jsonVec.begin(), jsonVec.end(),
+                     std::bind(funcPtr, std::placeholders::_1, lumiID) );
 
     return jsonVec.end() != iter;
 }
@@ -109,7 +107,6 @@ int main (int argc, char* argv[])
     {
         cout << "Config: " << parser.stringValue("config") << endl;
 
-        //Luca PythonProcessDesc builder(parser.stringValue("config"));
         PyBind11ProcessDesc builder(parser.stringValue("config"));
 
         const edm::ParameterSet &inputs =
