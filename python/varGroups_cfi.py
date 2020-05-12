@@ -2505,3 +2505,4 @@ groupSet = cms.PSet(
         #"SoftDropPuppiSubJetInfo.nPFElectron",
         #"SoftDropPuppiSubJetInfo.nPFMuon",
         #"SoftDropPuppiSubJetInfo.Jet_FatJetIdx",
+

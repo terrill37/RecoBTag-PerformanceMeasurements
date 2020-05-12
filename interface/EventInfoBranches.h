@@ -14,6 +14,7 @@ const UInt_t nMaxGenQuarks = 100;
 const UInt_t nMaxGenV0 = 100;
 const UInt_t nMaxGenPruned = 100;
 const UInt_t nMaxPatMuon = 1000;
+const UInt_t nMaxPatElec = 1000;
 
 class EventInfoBranches {
 
@@ -174,6 +175,7 @@ class EventInfoBranches {
     float PatMuon_IPsig[nMaxPatMuon];
     float PatMuon_IP2D[nMaxPatMuon];
     float PatMuon_IP2Dsig[nMaxPatMuon];
+
 
     int   ttbar_chan, ttbar_trigWord, ttbar_metfilterWord, ttbar_allmepartons, ttbar_matchmepartons;
     int   ttbar_ng,ttbar_gid[25];

@@ -78,6 +78,7 @@ def main():
     print('Using config  {}'.format(args.cmsRun_cfg))
     print('Writing to versionectory {}'.format(args.version))
 
+
     def submit(config):
         try:
             crabCommand('submit', config = config)
@@ -122,6 +123,7 @@ def main():
           config.Data.unitsPerJob = 100
           config.Data.lumiMask = args.lumiMask
         if args.outLFNDirBase and not args.outLFNDirBase.isspace():
+
           config.Data.outLFNDirBase = os.path.join(args.outLFNDirBase,args.version)
         config.Data.outputDatasetTag = cond
         print('Submitting {config.General.requestName} dataset =  {job}'.format(**locals()))
@@ -140,3 +142,4 @@ def main():
 
 if __name__ == '__main__':
   main()
+

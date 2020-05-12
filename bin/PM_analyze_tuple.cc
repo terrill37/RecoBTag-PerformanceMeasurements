@@ -37,6 +37,8 @@
 #include "RecoBTag/PerformanceMeasurements/interface/PMHistograms.h"
 #include "RecoBTag/PerformanceMeasurements/interface/TH1Store.h"
 
+#include <functional>
+
 using namespace std;
 using reco::Vertex;
 
@@ -50,8 +52,8 @@ bool jsonContainsEvent (const std::vector< edm::LuminosityBlockRange > &jsonVec,
 
     bool (*funcPtr)(edm::LuminosityBlockRange const &,
                     edm::LuminosityBlockID const &) = &edm::contains;
-                    edm::LuminosityBlockID lumiID (event.id().run(),
-                    event.id().luminosityBlock());
+    edm::LuminosityBlockID lumiID (event.id().run(),
+                                   event.id().luminosityBlock());
 
     std::vector< edm::LuminosityBlockRange >::const_iterator iter =
         std::find_if(jsonVec.begin(), jsonVec.end(),

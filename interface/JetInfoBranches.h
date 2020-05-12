@@ -50,6 +50,21 @@ class JetInfoBranches {
     float Jet_DeepFlavourCvsLDiscN[nMaxJets_];
     float Jet_DeepFlavourCvsBDiscN[nMaxJets_];
 
+    float Jet_DeepFlavourPrunedBDisc[nMaxJets_]   ;
+    float Jet_DeepFlavourPrunedCvsLDisc[nMaxJets_];
+    float Jet_DeepFlavourPrunedCvsBDisc[nMaxJets_];
+    float Jet_DeepFlavourPrunedB[nMaxJets_];
+    float Jet_DeepFlavourPrunedBB[nMaxJets_];
+    float Jet_DeepFlavourPrunedLEPB[nMaxJets_];
+    float Jet_DeepFlavourPrunedC[nMaxJets_];
+    float Jet_DeepFlavourPrunedUDS[nMaxJets_];
+    float Jet_DeepFlavourPrunedG[nMaxJets_];
+
+    float Jet_DeepFlavourPrunedBDiscN[nMaxJets_]   ;
+    float Jet_DeepFlavourPrunedCvsLDiscN[nMaxJets_];
+    float Jet_DeepFlavourPrunedCvsBDiscN[nMaxJets_];
+
+
     float Jet_DeepCSVBDisc[nMaxJets_]  ;
     float Jet_DeepCSVBDiscN[nMaxJets_]  ;
     float Jet_DeepCSVBDiscP[nMaxJets_]  ;
@@ -244,6 +259,8 @@ class JetInfoBranches {
     float Track_lengthTau[nMaxTrk_];
     float Track_distTau[nMaxTrk_];    
     int   Track_category[nMaxTrk_];
+    int   Track_algo[nMaxTrk_];
+    int   Track_originalAlgo[nMaxTrk_];
     
     float Track_TPAssociationQuality[nMaxTrk_];
     int	  Track_idxMatchedTP[nMaxTrk_];
@@ -1261,6 +1278,7 @@ class JetInfoBranches {
       if(variableParser.isToBeStored(name+"Track_isfromSV")) tree->SetBranchAddress((name+"Track_isfromSV").c_str()   ,Track_isfromSV   );
       if(variableParser.isToBeStored(name+"Track_isfromV0")) tree->SetBranchAddress((name+"Track_isfromV0").c_str()   ,Track_isfromV0   );
       if(variableParser.isToBeStored(name+"Track_category")) tree->SetBranchAddress((name+"Track_category").c_str()   ,Track_category   );
+
 
       //--------------------------------------
       // track truth information

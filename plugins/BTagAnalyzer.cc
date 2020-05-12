@@ -1,3 +1,4 @@
+
 // -*- C++ -*-
 //
 // Package:    BTagAnalyzerT
@@ -74,6 +75,8 @@
 #include "SimTracker/TrackHistory/interface/TrackClassifier.h"
 #include "DataFormats/BTauReco/interface/SoftLeptonTagInfo.h"
 #include "DataFormats/BTauReco/interface/DeepFlavourFeatures.h"
+#include "DataFormats/BTauReco/interface/DeepDoubleXFeatures.h"
+#include "DataFormats/BTauReco/interface/DeepBoostedJetFeatures.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
@@ -274,6 +277,7 @@ private:
   edm::EDGetTokenT<GenEventInfoProduct> src_;  // Generator/handronizer module label
   edm::EDGetTokenT<edm::View<reco::Muon>> muonCollectionName_;
   edm::EDGetTokenT<std::vector<pat::Muon>> patMuonCollectionName_;
+  edm::EDGetTokenT<std::vector<pat::Electron>> patElecCollectionName_;
   edm::EDGetTokenT<reco::GenParticleCollection> genParticleCollectionName_;
   edm::EDGetTokenT<reco::GenParticleCollection> prunedGenParticleCollectionName_;
   edm::EDGetTokenT<edm::TriggerResults> triggerTable_;
@@ -345,6 +349,8 @@ private:
   std::string softPFMuonTagInfos_;
   std::string softPFElectronTagInfos_;
   std::string bdsvTagInfos_;
+  std::string deepDoubleXTagInfos_;
+  std::string deepBoostedJetTagInfos_;
 
   edm::EDGetTokenT<reco::VertexCollection> primaryVertexColl_;
   edm::EDGetTokenT<reco::TrackCollection> tracksColl_;
@@ -566,6 +572,7 @@ BTagAnalyzerT<IPTI,VTX>::BTagAnalyzerT(const edm::ParameterSet& iConfig):
   runHadronVariables_ = iConfig.getParameter<bool>("runHadronVariables");
   runGenVariables_ = iConfig.getParameter<bool>("runGenVariables");
   runPatMuons_ = iConfig.getParameter<bool>("runPatMuons");
+
   runTagVariables_ = iConfig.getParameter<bool>("runTagVariables");
   runTagVariablesSubJets_ = iConfig.getParameter<bool>("runTagVariablesSubJets");
   runCSVTagVariables_ = iConfig.getParameter<bool>("runCSVTagVariables");
@@ -575,6 +582,7 @@ BTagAnalyzerT<IPTI,VTX>::BTagAnalyzerT(const edm::ParameterSet& iConfig):
   runPFElectronVariables_ = iConfig.getParameter<bool>("runPFElectronVariables");
   runPFMuonVariables_ = iConfig.getParameter<bool>("runPFMuonVariables");
   runCTagVariables_ = iConfig.getParameter<bool>("runCTagVariables");
+
 
 
   use_ttbar_filter_ = iConfig.getParameter<bool> ("use_ttbar_filter");
@@ -672,9 +680,12 @@ BTagAnalyzerT<IPTI,VTX>::BTagAnalyzerT(const edm::ParameterSet& iConfig):
   softPFMuonTagInfos_      = iConfig.getParameter<std::string>("softPFMuonTagInfos");
   softPFElectronTagInfos_  = iConfig.getParameter<std::string>("softPFElectronTagInfos");
   bdsvTagInfos_            = iConfig.getParameter<std::string>("bdsvTagInfos");
+  deepDoubleXTagInfos_     = iConfig.getParameter<std::string>("deepDoubleXTagInfos");
+  deepBoostedJetTagInfos_     = iConfig.getParameter<std::string>("deepBoostedJetTagInfos");
 
   muonCollectionName_       = consumes<edm::View<reco::Muon>>(iConfig.getParameter<edm::InputTag>("muonCollectionName"));
   patMuonCollectionName_    = consumes<std::vector<pat::Muon>>(iConfig.getParameter<edm::InputTag>("patMuonCollectionName"));
+  patElecCollectionName_    = consumes<std::vector<pat::Electron>>(iConfig.getParameter<edm::InputTag>("patElecCollectionName"));
   genParticleCollectionName_ = consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles"));
   prunedGenParticleCollectionName_ = consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("prunedGenParticles"));
 
@@ -852,6 +863,7 @@ void BTagAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Event
   EventInfo.nGenPruned = 0;
   EventInfo.nTrkAll    = 0;
   EventInfo.nPatMuon   = 0;
+  EventInfo.nPatElec   = 0;
   EventInfo.mcweight   = 1.;
 
   bool AreBHadrons = false;
@@ -1018,6 +1030,7 @@ void BTagAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Event
 //           EventInfo.BHadron_hasBdaughter[EventInfo.nBHadrons] = hasBHadronDaughter;
 //           ++EventInfo.nBHadrons;
 //         }
+
 
         // Final c Hadrons
         if ( (ID/100)%10 == 4 || (ID/1000)%10 == 4 ) {
@@ -1558,6 +1571,46 @@ void BTagAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Event
   }
 
   //------------------------------------------------------
+  // PAT Elecs
+  //------------------------------------------------------
+  if (runPatElecs_) {
+
+     //fill electron tree
+     //cf. https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2
+     edm::Handle<std::vector<pat::Electron>> patElecsHandle;
+     iEvent.getByToken(patElecCollectionName_, patElecsHandle);
+     for (auto i = patElecsHandle->begin(); i != patElecsHandle->end(); ++i) {
+       //if (!(muon::isLooseMuon(*i))) continue;
+       if(!i->electronID("cutBasedElectronID-Fall17-94X-V1-loose")) continue;
+	 
+       EventInfo.PatElec_pt[EventInfo.nPatElec] = i->pt();
+       EventInfo.PatElec_eta[EventInfo.nPatElec] = i->eta();
+       EventInfo.PatElec_superClusterEta[EventInfo.nPatElec] = i->superCluster()->eta();
+       EventInfo.PatElec_phi[EventInfo.nPatElec] = i->phi();
+
+       EventInfo.PatElec_isLooseElec[EventInfo.nPatElec] = int(i->electronID("cutBasedElectronID-Fall17-94X-V1-loose"));
+       EventInfo.PatElec_isMediumElec[EventInfo.nPatElec] = int(i->electronID("cutBasedElectronID-Fall17-94X-V1-medium"));
+       EventInfo.PatElec_isTightElec[EventInfo.nPatElec] = int(i->electronID("cutBasedElectronID-Fall17-94X-V1-tight"));
+
+        //if (i->isPFMuon()) {
+        //   EventInfo.PatMuon_iso[EventInfo.nPatMuon] = (i->pfIsolationR04().sumChargedHadronPt + max(0., i->pfIsolationR04().sumNeutralHadronEt + i->pfIsolationR04().sumPhotonEt - 0.5*i->pfIsolationR04().sumPUPt))/i->pt();
+        //} else {
+        //   EventInfo.PatMuon_iso[EventInfo.nPatMuon] = 999.;
+        //}
+        //EventInfo.PatMuon_isoTrackerOnly[EventInfo.nPatMuon] = 
+       //float iso = i->isolationR03().sumPt/i->pt();
+
+       GsfElectron::PflowIsolationVariables ElecIsoVars = i->pfIsolationVariables();
+       EventInfo.PatElec_sumChargedHadronPt[EventInfo.nPatElec] = ElecIsoVars.sumChargedHadronPt;
+       EventInfo.PatElec_sumNeutralHadronEt[EventInfo.nPatElec] = ElecIsoVars.sumNeutralHadronEt;
+       EventInfo.PatElec_sumPhotonEt       [EventInfo.nPatElec] = ElecIsoVars.sumPhotonEt;
+       EventInfo.PatElec_sumPUPt           [EventInfo.nPatElec] = ElecIsoVars.sumPUPt;
+        ++EventInfo.nPatElec;
+     }
+  }
+
+
+  //------------------------------------------------------
   // Muons
   //------------------------------------------------------
   edm::Handle<edm::View<reco::Muon> >  muonsHandle;
@@ -1678,7 +1731,8 @@ void BTagAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Event
   //------------------------------------------------------
 
   //// Fill TTree
-  if ( EventInfo.BitTrigger > 0 || EventInfo.Run < 0 ) {
+  //std::cout << "Event BitTrigger " << EventInfo.BitTrigger << " " << EventInfo.BitTrigger[0] << " " << EventInfo.BitTrigger[1] << " " << EventInfo.BitTrigger[2] << std::endl;
+  if ( EventInfo.BitTrigger[0] > 0 || EventInfo.Run < 0 ) {
     smalltree->Fill();
   }
 
@@ -1698,7 +1752,10 @@ void BTagAnalyzerT<IPTI,VTX>::processTrig(const edm::Handle<edm::TriggerResults>
     {
       int triggerIdx = ( itTrigPathNames - triggerPathNames_.begin() );
       int bitIdx = int(triggerIdx/32);
-      if ( NameCompatible(*itTrigPathNames,triggerList[i]) ) EventInfo.BitTrigger[bitIdx] |= ( 1 << (triggerIdx - bitIdx*32) );
+      if ( NameCompatible(*itTrigPathNames,triggerList[i]) ) {
+	//std::cout << " SEtting Bit on " << triggerList[i] << " bitIdx " << bitIdx << std::endl;
+	EventInfo.BitTrigger[bitIdx] |= ( 1 << (triggerIdx - bitIdx*32) );
+      }
     }
 
   } //// Loop over trigger names
@@ -2197,6 +2254,8 @@ void BTagAnalyzerT<IPTI,VTX>::processJets(const edm::Handle<PatJetCollection>& j
         JetInfo[iJetColl].Track_nHitPXB[JetInfo[iJetColl].nTrack]  = ptrack.hitPattern().numberOfValidPixelBarrelHits();
         JetInfo[iJetColl].Track_nHitPXF[JetInfo[iJetColl].nTrack]  = ptrack.hitPattern().numberOfValidPixelEndcapHits();
         JetInfo[iJetColl].Track_isHitL1[JetInfo[iJetColl].nTrack]  = ptrack.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::SubDetector::PixelBarrel, 1);
+	JetInfo[iJetColl].Track_algo[JetInfo[iJetColl].nTrack]  = ptrack.algo();
+	JetInfo[iJetColl].Track_originalAlgo[JetInfo[iJetColl].nTrack]  = ptrack.originalAlgo();
 
         setTracksPV(ptrackRef, primaryVertex,
                     JetInfo[iJetColl].Track_PV[JetInfo[iJetColl].nTrack],
@@ -2286,7 +2345,6 @@ void BTagAnalyzerT<IPTI,VTX>::processJets(const edm::Handle<PatJetCollection>& j
            if ( theFlag[TrackCategories::HadronicProcess] )   JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(10, -1 + 7);
            if ( theFlag[TrackCategories::Fake] ) 	       JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(10, -1 + 8);
            if ( theFlag[TrackCategories::SharedInnerHits] )   JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(10, -1 + 9);
-
 
            if ( JetInfo[iJetColl].Track_IPsig[JetInfo[iJetColl].nTrack] > 0 ) {
              if ( theFlag[TrackCategories::BWeakDecay] )	 cap0 = 1;
@@ -2813,10 +2871,12 @@ void BTagAnalyzerT<IPTI,VTX>::processJets(const edm::Handle<PatJetCollection>& j
     JetInfo[iJetColl].Jet_SoftEl[JetInfo[iJetColl].nJet]   = SoftE;
     JetInfo[iJetColl].Jet_DoubleSV[JetInfo[iJetColl].nJet] = DoubleSV;
     JetInfo[iJetColl].Jet_DeepDoubleB[JetInfo[iJetColl].nJet] = DeepDoubleB;
+
 //     JetInfo[iJetColl].Jet_cMVA[JetInfo[iJetColl].nJet] = cMVA;
     JetInfo[iJetColl].Jet_cMVAv2[JetInfo[iJetColl].nJet] = cMVAv2;
     JetInfo[iJetColl].Jet_cMVAv2N[JetInfo[iJetColl].nJet] = cMVAv2Neg;
 //     JetInfo[iJetColl].Jet_cMVAv2P[JetInfo[iJetColl].nJet] = cMVAv2Pos;
+
 
     // TagInfo TaggingVariables
     if ( runTagVariables )
@@ -3357,6 +3417,7 @@ void BTagAnalyzerT<IPTI,VTX>::processJets(const edm::Handle<PatJetCollection>& j
     } //// if secondary vertices present
     JetInfo[iJetColl].Jet_nLastSV[JetInfo[iJetColl].nJet] = JetInfo[iJetColl].nSV;
 
+
     JetInfo[iJetColl].Jet_tau1_vertexEnergyRatio[JetInfo[iJetColl].nJet] = -1;
     JetInfo[iJetColl].Jet_tau2_vertexEnergyRatio[JetInfo[iJetColl].nJet] = -1.;
     JetInfo[iJetColl].Jet_tau1_vertexMass[JetInfo[iJetColl].nJet] = -1;
@@ -3468,6 +3529,7 @@ void BTagAnalyzerT<IPTI,VTX>::processJets(const edm::Handle<PatJetCollection>& j
       JetInfo[iJetColl].Jet_nSV_fat[JetInfo[iJetColl].nJet] = vars.get(reco::btau::jetNSecondaryVertices);
       //--------------------------
     }
+  }
 
 
     cap0=0; cap1=0; cap2=0; cap3=0; cap4=0; cap5=0; cap6=0; cap7=0; cap8=0;

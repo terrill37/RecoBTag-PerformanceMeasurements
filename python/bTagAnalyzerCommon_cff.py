@@ -1,3 +1,4 @@
+
 import FWCore.ParameterSet.Config as cms
 from SimTracker.TrackHistory.TrackClassifier_cff import *
 bTagAnalyzerCommon = cms.PSet(
@@ -17,11 +18,13 @@ bTagAnalyzerCommon = cms.PSet(
     runHadronVariables       = cms.bool(False),
     runGenVariables          = cms.bool(True),
     runPatMuons              = cms.bool(False),
+
     runTagVariables          = cms.bool(False),
     runTagVariablesSubJets   = cms.bool(False),
     runCSVTagVariables       = cms.bool(False),
     runCSVTagTrackVariables  = cms.bool(False),
     runDeepFlavourTagVariables = cms.bool(False),
+
     runCSVTagVariablesSubJets = cms.bool(False),
     runPFElectronVariables   = cms.bool(False),
     runPFMuonVariables       = cms.bool(False),
@@ -39,6 +42,7 @@ bTagAnalyzerCommon = cms.PSet(
     SubJetLabels             = cms.vstring(),
     muonCollectionName       = cms.InputTag('muons'),
     patMuonCollectionName    = cms.InputTag('selectedPatMuons'),
+    patElecCollectionName    = cms.InputTag('selectedPatElectrons'),
     triggerTable             = cms.InputTag('TriggerResults'),
     genParticles             = cms.InputTag('genParticles'),
     prunedGenParticles       = cms.InputTag('prunedGenParticlesBoost'),
@@ -62,6 +66,9 @@ bTagAnalyzerCommon = cms.PSet(
     decayLengthSubJets       = cms.double(5.0),
     deltaRSubJets            = cms.double(0.3),
     TriggerPathNames = cms.vstring(
+        # TTBar Triggers
+        "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_*",
+        "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_*",
         # based on https://cmswbm.cern.ch/cmsdb/servlet/HLTSummary?RUN=297050&NAME=/cdaq/physics/Run2017/2e34/v1.1.1/HLT/V2
         # PF Jets
         "HLT_PFJet40_v*",
@@ -103,11 +110,12 @@ bTagAnalyzerCommon = cms.PSet(
         "HLT_BTagMu_AK4DiJet40_Mu5_v*",
         "HLT_BTagMu_AK4DiJet70_Mu5_v*",
         "HLT_BTagMu_AK4DiJet110_Mu5_v*",
-        "HLT_BTagMu_AK4DiJet170_Mu5_v*", 
+        "HLT_BTagMu_AK4DiJet170_Mu5_v*",
         "HLT_BTagMu_AK4Jet300_Mu5_v*",
         "HLT_BTagMu_AK8DiJet170_Mu5_v*",
         "HLT_BTagMu_AK8Jet300_Mu5_v*",
         "HLT_BTagMu_AK8Jet170_DoubleMu5_v*"
+
     ),
     TTbarTriggerPathNames = cms.vstring(
         # trigger for ttbar: https://twiki.cern.ch/twiki/bin/viewauth/CMS/TWikiTopRefEventSel#Triggers
