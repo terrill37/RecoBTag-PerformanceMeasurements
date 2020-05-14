@@ -1043,7 +1043,7 @@ else:
         if options.usePuppiForBTagging: pfCandidates = 'puppi'
 
 ## Load standard PAT objects (here we only need PAT muons but the framework will figure out what it needs to run using the unscheduled mode)
-process.load("PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff")
+#Luca process.load("PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff")
 process.load("PhysicsTools.PatAlgos.selectionLayer1.selectedPatCandidates_cff")
 
 from PhysicsTools.PatAlgos.tools.jetTools import *

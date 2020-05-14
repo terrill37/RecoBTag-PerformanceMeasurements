@@ -58,7 +58,7 @@ options.register('groups', [],
 
 
 ## 'maxEvents' is already registered by the Framework, changing default value
-options.setDefault('maxEvents', 500)
+options.setDefault('maxEvents', 10)
 
 options.parseArguments()
 
