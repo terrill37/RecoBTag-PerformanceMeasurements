@@ -9,6 +9,16 @@ cmsenv
 
 git cms-init
 
+# [HGCal] fix to PID+EnergyRegression in TICL
+git cms-merge-topic cms-sw:29799
+
+# temporary workaround for PFSimParticle::trackerSurfaceMomentum
+# ref: hatakeyamak:FBaseSimEvent_ProtectAgainstMissingTrackerSurfaceMomentum
+git cms-addpkg FastSimulation/Event
+git remote add hatakeyamak https://github.com/hatakeyamak/cmssw.git
+git fetch hatakeyamak
+git cherry-pick 0cf67551731c80dc85130e4b8ec73c8f44d53cb0
+
 git cms-addpkg RecoBTag
 git cms-addpkg RecoBTag/TensorFlow
 git cms-addpkg RecoBTag/Combined
