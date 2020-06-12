@@ -119,7 +119,8 @@ def main():
           config.Data.lumiMask = args.lumiMask
         elif datatier == "GEN-SIM-RAW":
           config.Data.splitting = 'EventAwareLumiBased'
-          config.Data.unitsPerJob = 40
+          # config.Data.unitsPerJob = 40
+          config.Data.unitsPerJob = 200
           config.Data.totalUnits = -1
           # config.Site.whitelist = ['T2_DE_*','T1_DE_*']
 
