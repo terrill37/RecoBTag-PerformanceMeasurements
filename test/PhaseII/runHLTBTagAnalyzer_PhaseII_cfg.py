@@ -60,28 +60,32 @@ opts.register('pfdqm', True,
               vpo.VarParsing.varType.bool,
               'added monitoring histograms for selected PF-Candidates')
 
-opts.register('skimTracks', False,
-              vpo.VarParsing.multiplicity.singleton,
-              vpo.VarParsing.varType.bool,
-              'skim original collection of generalTracks (only tracks associated to first N pixel vertices)')
+
 
 opts.parseArguments()
 
+# flag: skim original collection of generalTracks (only tracks associated to first N pixel vertices)
+opt_skimTracks = False
 
-if opts.reco == 'hltPhase2_TRKv00':
+opt_reco = opts.reco
+if opt_reco.endswith('_skimmedTracks'):
+   opt_reco = opt_reco[:-len('_skimmedTracks')]
+   opt_skimTracks = True
+
+if opt_reco == 'hltPhase2_TRKv00':
    from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv00_cfg import cms, process
-elif opts.reco == 'hltPhase2_TRKv02':
+elif opt_reco == 'hltPhase2_TRKv02':
    from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv02_cfg import cms, process
-elif opts.reco == 'hltPhase2_TRKv06':
+elif opt_reco == 'hltPhase2_TRKv06':
    from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv06_cfg import cms, process
-elif opts.reco == 'hltPhase2_TRKv00_TICL':
+elif opt_reco == 'hltPhase2_TRKv00_TICL':
    from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv00_TICL_cfg import cms, process
-elif opts.reco == 'hltPhase2_TRKv02_TICL':
+elif opt_reco == 'hltPhase2_TRKv02_TICL':
    from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv02_TICL_cfg import cms, process
-elif opts.reco == 'hltPhase2_TRKv06_TICL':
+elif opt_reco == 'hltPhase2_TRKv06_TICL':
    from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv06_TICL_cfg import cms, process
 else:
-   raise RuntimeError('invalid argument for option "reco": "'+opts.reco+'"')
+   raise RuntimeError('invalid argument for option "reco": "'+opt_reco+'"')
 
 # reset path to EDM input files
 process.source.fileNames = []
@@ -89,10 +93,10 @@ process.source.secondaryFileNames = []
 
 
 
-# skimming of tracks
-if opts.skimTracks:
-   from JMETriggerAnalysis.Common.hltPhase2_skimmedTracks import customize_hltPhase2_skimmedTracks
-   process = customize_hltPhase2_skimmedTracks(process)
+# # skimming of tracks
+# if opts.skimTracks:
+#    from JMETriggerAnalysis.Common.hltPhase2_skimmedTracks import customize_hltPhase2_skimmedTracks
+#    process = customize_hltPhase2_skimmedTracks(process)
 
 
 
@@ -220,7 +224,12 @@ if opts.gt is not None:
    process.GlobalTag.globaltag = opts.gt
 print "Running with globalTag: %s"%(process.GlobalTag.globaltag)
 
-
+# fix for AK4PF Phase-2 JECs
+process.GlobalTag.toGet.append(cms.PSet(
+  record = cms.string('JetCorrectionsRecord'),
+  tag = cms.string('JetCorrectorParametersCollection_PhaseIIFall17_V5b_MC_AK4PF'),
+  label = cms.untracked.string('AK4PF'),
+))
 
 #~ outFilename = 'JetTree_mc.root'
 outFilename = opts.outName
@@ -277,57 +286,71 @@ process.selectedEvents = eventCounter.clone()
 #---------------------------------------
 
 # update JESC via local SQLite file
-from CondCore.CondDB.CondDB_cfi import CondDB
-CondDBJECFile = CondDB.clone(connect = 'sqlite_fip:RecoBTag/PerformanceMeasurements/data/PhaseIIFall17_V5b_MC.db' )
-process.jec = cms.ESSource('PoolDBESSource', CondDBJECFile, toGet = cms.VPSet())
-for _tmp in [
-  'AK4PF',
-#      'AK4PFchs',
-#      'AK4PFPuppi',
-#      'AK8PF',
-#      'AK8PFchs',
-#      'AK8PFPuppi',
-]:
-  process.jec.toGet.append(
-    cms.PSet(
-      record = cms.string('JetCorrectionsRecord'),
-      tag = cms.string('JetCorrectorParametersCollection_PhaseIIFall17_V5b_MC_'+_tmp),
-      label = cms.untracked.string(_tmp),
-    )
-  )
+# from CondCore.CondDB.CondDB_cfi import CondDB
+# CondDBJECFile = CondDB.clone(connect = 'sqlite_fip:RecoBTag/PerformanceMeasurements/data/PhaseIIFall17_V5b_MC.db' )
+# process.jec = cms.ESSource('PoolDBESSource', CondDBJECFile, toGet = cms.VPSet())
+# for _tmp in [
+#   'AK4PF',
+# #      'AK4PFchs',
+# #      'AK4PFPuppi',
+# #      'AK8PF',
+# #      'AK8PFchs',
+# #      'AK8PFPuppi',
+# ]:
+#   process.jec.toGet.append(
+#     cms.PSet(
+#       record = cms.string('JetCorrectionsRecord'),
+#       tag = cms.string('JetCorrectorParametersCollection_PhaseIIFall17_V5b_MC_'+_tmp),
+#       label = cms.untracked.string(_tmp),
+#     )
+#   )
 
 # Add an ESPrefer to override JEC that might be available from the global tag
-process.es_prefer_jec = cms.ESPrefer('PoolDBESSource', 'jec')
+# process.es_prefer_jec = cms.ESPrefer('PoolDBESSource', 'jec')
 
 # Tracking Monitoring
 if opts.trkdqm:
-   if opts.reco in ['hltPhase2_TRKv00', 'hltPhase2_TRKv00_TICL', 'hltPhase2_TRKv02', 'hltPhase2_TRKv02_TICL']:
+
+   if opt_reco in ['HLT_TRKv00', 'HLT_TRKv00_TICL', 'HLT_TRKv02', 'HLT_TRKv02_TICL']:
       process.reconstruction_pixelTrackingOnly_step = cms.Path(process.reconstruction_pixelTrackingOnly)
       process.schedule.extend([process.reconstruction_pixelTrackingOnly_step])
 
    from JMETriggerAnalysis.Common.TrackHistogrammer_cfi import TrackHistogrammer
-   process.TrackHistograms_pixelTracks = TrackHistogrammer.clone(src = 'pixelTracks')
-   process.TrackHistograms_generalTracks = TrackHistogrammer.clone(src = 'generalTracks')
-
-   from JMETriggerAnalysis.Common.VertexHistogrammer_cfi import VertexHistogrammer
-   process.VertexHistograms_pixelVertices = VertexHistogrammer.clone(src = 'pixelVertices')
-   process.VertexHistograms_offlinePrimaryVertices = VertexHistogrammer.clone(src = 'offlinePrimaryVertices')
+   process.TrackHistograms_hltPixelTracks = TrackHistogrammer.clone(src = 'pixelTracks')
+   process.TrackHistograms_hltGeneralTracks = TrackHistogrammer.clone(src = 'generalTracks')
 
    process.trkMonitoringSeq = cms.Sequence(
-       process.TrackHistograms_pixelTracks
-       +process.TrackHistograms_generalTracks
+       process.TrackHistograms_hltPixelTracks
+     + process.TrackHistograms_hltGeneralTracks
    )
 
-   if opts.skimTracks:
-      process.TrackHistograms_generalTracksOriginal = TrackHistogrammer.clone(src = 'generalTracksOriginal')
-      process.trkMonitoringSeq += process.TrackHistograms_generalTracksOriginal
+   if opt_skimTracks:
+      process.TrackHistograms_hltGeneralTracksOriginal = TrackHistogrammer.clone(src = 'generalTracksOriginal')
+      process.trkMonitoringSeq += process.TrackHistograms_hltGeneralTracksOriginal
+
+   from JMETriggerAnalysis.Common.VertexHistogrammer_cfi import VertexHistogrammer
+   process.VertexHistograms_hltPixelVertices = VertexHistogrammer.clone(src = 'pixelVertices')
+   process.VertexHistograms_hltPrimaryVertices = VertexHistogrammer.clone(src = 'offlinePrimaryVertices')
+   process.VertexHistograms_offlinePrimaryVertices = VertexHistogrammer.clone(src = 'offlineSlimmedPrimaryVertices')
 
    process.trkMonitoringSeq += cms.Sequence(
-    process.VertexHistograms_pixelVertices
-    +process.VertexHistograms_offlinePrimaryVertices
+       process.VertexHistograms_hltPixelVertices
+     + process.VertexHistograms_hltPrimaryVertices
+     + process.VertexHistograms_offlinePrimaryVertices
    )
+
+#   from Validation.RecoVertex.PrimaryVertexAnalyzer4PUSlimmed_cfi import vertexAnalysis, pixelVertexAnalysisPixelTrackingOnly
+#   process.vertexAnalysis = vertexAnalysis.clone(vertexRecoCollections = ['offlinePrimaryVertices'])
+#   process.pixelVertexAnalysis = pixelVertexAnalysisPixelTrackingOnly.clone(vertexRecoCollections = ['pixelVertices'])
+#
+#   process.trkMonitoringSeq += cms.Sequence(
+#       process.vertexAnalysis
+#     + process.pixelVertexAnalysis
+#   )
+
    process.trkMonitoringEndPath = cms.EndPath(process.trkMonitoringSeq)
    process.schedule.extend([process.trkMonitoringEndPath])
+
 
 if opts.pfdqm:
 
@@ -370,6 +393,13 @@ if opts.pfdqm:
    process.schedule.extend([process.pfMonitoringEndPath])
 
 
+# skimming of tracks
+if opt_skimTracks:
+
+   from JMETriggerAnalysis.Common.hltPhase2_skimmedTracks import customize_hltPhase2_skimmedTracks
+   process = customize_hltPhase2_skimmedTracks(process)
+
+
 process.p = cms.Path(
     process.allEvents
     * process.selectedEvents
@@ -396,6 +426,5 @@ print 'process.GlobalTag.globaltag =', process.GlobalTag.globaltag
 print 'dumpPython =', opts.dumpPython
 print 'doTrackHistos =', opts.trkdqm
 print 'doParticleFlowHistos =', opts.pfdqm
-print 'reco =', opts.reco
-print 'useSkimmedTracks =', opts.skimTracks
+print 'option: reco =', opt_reco, '(skimTracks = '+str(opt_skimTracks)+')'
 print '\n-------------------------------'
