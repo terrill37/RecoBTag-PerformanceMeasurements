@@ -321,7 +321,8 @@ def customize_hltPhase2_BTV(process, name='HLTBTVSequence'):
         ),
         vertexSelection = cms.PSet(
             sortCriterium = cms.string('dist3dError')
-        )
+        ),
+        weights = cms.InputTag("hltPuppi")
     )
 
     # for PFCHSJets
