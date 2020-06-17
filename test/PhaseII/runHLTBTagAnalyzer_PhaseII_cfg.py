@@ -55,6 +55,16 @@ opts.register('trkdqm', True,
               vpo.VarParsing.varType.bool,
               'added monitoring histograms for selected Tracks and Vertices')
 
+opts.register('L1', True,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.bool,
+              'run L1 trigger')
+
+opts.register('FastPV', False,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.bool,
+              'use noFilter DeepCSv sequences with FastPV')
+
 opts.register('pfdqm', True,
               vpo.VarParsing.multiplicity.singleton,
               vpo.VarParsing.varType.bool,
@@ -91,23 +101,31 @@ else:
 process.source.fileNames = []
 process.source.secondaryFileNames = []
 
+# skimming of tracks
+if opt_skimTracks:
+   from JMETriggerAnalysis.Common.hltPhase2_skimmedTracks import customize_hltPhase2_skimmedTracks
+   process = customize_hltPhase2_skimmedTracks(process)
 
+if opts.L1:
+   from JMETriggerAnalysis.Common.hltPhase2_L1 import customize_hltPhase2_L1
+   process = customize_hltPhase2_L1(process)
 
-# # skimming of tracks
-# if opts.skimTracks:
-#    from JMETriggerAnalysis.Common.hltPhase2_skimmedTracks import customize_hltPhase2_skimmedTracks
-#    process = customize_hltPhase2_skimmedTracks(process)
+if opts.FastPV:
+    process.noFilter_PFDeepCSV = cms.Path(process.HLTBtagDeepCSVSequencePFFastPV)
+    process.noFilter_PFProba = cms.Path(process.HLTBtagProbabiltySequencePFFastPV)
+    process.noFilter_PFBProba = cms.Path(process.HLTBtagBProbabiltySequencePFFastPV)
+    process.noFilter_PFDeepCSVPuppi = cms.Path(process.HLTBtagDeepCSVSequencePFPuppiFastPV)
+    process.noFilter_PFProbaPuppi = cms.Path(process.HLTBtagProbabiltySequencePFPuppiFastPV)
+    process.noFilter_PFBProbaPuppi = cms.Path(process.HLTBtagBProbabiltySequencePFPuppiFastPV)
+else:
+    process.noFilter_PFDeepCSV = cms.Path(process.HLTBtagDeepCSVSequencePF)
+    process.noFilter_PFProba = cms.Path(process.HLTBtagProbabiltySequencePF)
+    process.noFilter_PFBProba = cms.Path(process.HLTBtagBProbabiltySequencePF)
+    process.noFilter_PFDeepCSVPuppi = cms.Path(process.HLTBtagDeepCSVSequencePFPuppi)
+    process.noFilter_PFProbaPuppi = cms.Path(process.HLTBtagProbabiltySequencePFPuppi)
+    process.noFilter_PFBProbaPuppi = cms.Path(process.HLTBtagBProbabiltySequencePFPuppi)
 
-
-
-process.noFilter_PFDeepCSV = cms.Path(process.HLTBtagDeepCSVSequencePF)
-process.noFilter_PFProba = cms.Path(process.HLTBtagProbabiltySequencePF)
-process.noFilter_PFBProba = cms.Path(process.HLTBtagBProbabiltySequencePF)
 process.schedule.extend([process.noFilter_PFDeepCSV, process.noFilter_PFProba, process.noFilter_PFBProba])
-
-process.noFilter_PFDeepCSVPuppi = cms.Path(process.HLTBtagDeepCSVSequencePFPuppi)
-process.noFilter_PFProbaPuppi = cms.Path(process.HLTBtagProbabiltySequencePFPuppi)
-process.noFilter_PFBProbaPuppi = cms.Path(process.HLTBtagBProbabiltySequencePFPuppi)
 process.schedule.extend([process.noFilter_PFDeepCSVPuppi, process.noFilter_PFProbaPuppi, process.noFilter_PFBProbaPuppi])
 
 
@@ -328,15 +346,33 @@ if opts.trkdqm:
       process.TrackHistograms_hltGeneralTracksOriginal = TrackHistogrammer.clone(src = 'generalTracksOriginal')
       process.trkMonitoringSeq += process.TrackHistograms_hltGeneralTracksOriginal
 
+   if opts.L1:
+       from JMETriggerAnalysis.Common.L1TrackHistogrammer_cfi import L1TrackHistogrammer
+       from JMETriggerAnalysis.Common.L1VertexHistogrammer_cfi import L1VertexHistogrammer
+       from JMETriggerAnalysis.Common.L1JetHistogrammer_cfi import L1JetHistogrammer
+       from JMETriggerAnalysis.Common.JetHistogrammer_cfi import JetHistogrammer
+       process.TrackHistograms_L1BarrelTracks = L1TrackHistogrammer.clone(src = 'pfTracksFromL1TracksBarrel')
+       process.TrackHistograms_L1HGCalTracks = L1TrackHistogrammer.clone(src = 'pfTracksFromL1TracksHGCal')
+       process.trkMonitoringSeq += process.TrackHistograms_L1BarrelTracks
+       process.trkMonitoringSeq += process.TrackHistograms_L1HGCalTracks
+       process.VertexHistograms_L1PrimaryVertices = L1VertexHistogrammer.clone(src = 'L1TkPrimaryVertex')
+       process.trkMonitoringSeq += process.VertexHistograms_L1PrimaryVertices
+       process.JetHistograms_L1PFCHSCorrected = L1JetHistogrammer.clone(src = 'ak4PFL1PFCorrected')
+       process.JetHistograms_L1PFPUPPICorrected = L1JetHistogrammer.clone(src = 'ak4PFL1PuppiCorrected')
+       process.JetHistograms_L1PFCHS = JetHistogrammer.clone(src = 'ak4PFL1PF')
+       process.JetHistograms_L1PFPUPPI = JetHistogrammer.clone(src = 'ak4PFL1Puppi')
+       process.trkMonitoringSeq += process.JetHistograms_L1PFCHSCorrected
+       process.trkMonitoringSeq += process.JetHistograms_L1PFPUPPICorrected
+       process.trkMonitoringSeq += process.JetHistograms_L1PFCHS
+       process.trkMonitoringSeq += process.JetHistograms_L1PFPUPPI
+
    from JMETriggerAnalysis.Common.VertexHistogrammer_cfi import VertexHistogrammer
    process.VertexHistograms_hltPixelVertices = VertexHistogrammer.clone(src = 'pixelVertices')
    process.VertexHistograms_hltPrimaryVertices = VertexHistogrammer.clone(src = 'offlinePrimaryVertices')
-   process.VertexHistograms_offlinePrimaryVertices = VertexHistogrammer.clone(src = 'offlineSlimmedPrimaryVertices')
 
    process.trkMonitoringSeq += cms.Sequence(
        process.VertexHistograms_hltPixelVertices
      + process.VertexHistograms_hltPrimaryVertices
-     + process.VertexHistograms_offlinePrimaryVertices
    )
 
 #   from Validation.RecoVertex.PrimaryVertexAnalyzer4PUSlimmed_cfi import vertexAnalysis, pixelVertexAnalysisPixelTrackingOnly
@@ -393,13 +429,6 @@ if opts.pfdqm:
    process.schedule.extend([process.pfMonitoringEndPath])
 
 
-# skimming of tracks
-if opt_skimTracks:
-
-   from JMETriggerAnalysis.Common.hltPhase2_skimmedTracks import customize_hltPhase2_skimmedTracks
-   process = customize_hltPhase2_skimmedTracks(process)
-
-
 process.p = cms.Path(
     process.allEvents
     * process.selectedEvents
@@ -425,6 +454,7 @@ print 'wantSummary =', opts.wantSummary
 print 'process.GlobalTag.globaltag =', process.GlobalTag.globaltag
 print 'dumpPython =', opts.dumpPython
 print 'doTrackHistos =', opts.trkdqm
+print 'rerunL1 =', opts.L1
 print 'doParticleFlowHistos =', opts.pfdqm
 print 'option: reco =', opt_reco, '(skimTracks = '+str(opt_skimTracks)+')'
 print '\n-------------------------------'
