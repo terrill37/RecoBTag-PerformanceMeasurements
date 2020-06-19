@@ -1,0 +1,556 @@
+###
+### command-line arguments
+###
+import FWCore.ParameterSet.VarParsing as vpo
+opts = vpo.VarParsing('analysis')
+
+opts.register('reco', 'HLT_TRKv06_TICL',
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.string,
+              'keyword defining reconstruction methods for JME inputs')
+
+opts.register('BTVreco', 'default',
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.string,
+              'which reco to load for BTV sequence, default = default')
+
+opts.register('skipEvents', 0,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.int,
+              'number of events to be skipped')
+
+opts.register('dumpPython', None,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.string,
+              'path to python file with content of cms.Process')
+
+opts.register('numThreads', 1,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.int,
+              'number of threads')
+
+opts.register('numStreams', 1,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.int,
+              'number of streams')
+
+opts.register('wantSummary', False,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.bool,
+              'show cmsRun summary at job completion')
+
+opts.register('globalTag', None,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.string,
+              'argument of process.GlobalTag.globaltag')
+
+opts.register('output', 'out.root',
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.string,
+              'path to output ROOT file')
+
+opts.parseArguments()
+
+###
+### base configuration file
+### (choice of reconstruction sequence)
+###
+
+# flag: skim original collection of generalTracks (only tracks associated to first N pixel vertices)
+opt_skimTracks = False
+
+opt_reco = opts.reco
+if opt_reco.endswith('_skimmedTracks'):
+   opt_reco = opt_reco[:-len('_skimmedTracks')]
+   opt_skimTracks = True
+
+if   opt_reco == 'HLT_TRKv00':      from RecoBTag.PerformanceMeasurements.Configs.hltPhase2_TRKv00_cfg      import cms, process
+elif opt_reco == 'HLT_TRKv00_TICL': from RecoBTag.PerformanceMeasurements.Configs.hltPhase2_TRKv00_TICL_cfg import cms, process
+elif opt_reco == 'HLT_TRKv02':      from RecoBTag.PerformanceMeasurements.Configs.hltPhase2_TRKv02_cfg      import cms, process
+elif opt_reco == 'HLT_TRKv02_TICL': from RecoBTag.PerformanceMeasurements.Configs.hltPhase2_TRKv02_TICL_cfg import cms, process
+elif opt_reco == 'HLT_TRKv06':      from RecoBTag.PerformanceMeasurements.Configs.hltPhase2_TRKv06_cfg      import cms, process
+elif opt_reco == 'HLT_TRKv06_TICL': from RecoBTag.PerformanceMeasurements.Configs.hltPhase2_TRKv06_TICL_cfg import cms, process
+else:
+   logmsg = '\n\n'+' '*2+'Valid arguments for option "reco" are'
+   for recoArg in [
+     'HLT_TRKv00',
+     'HLT_TRKv00_skimmedTracks',
+     'HLT_TRKv00_TICL',
+     'HLT_TRKv00_TICL_skimmedTracks',
+     'HLT_TRKv02',
+     'HLT_TRKv02_skimmedTracks',
+     'HLT_TRKv02_TICL',
+     'HLT_TRKv02_TICL_skimmedTracks',
+     'HLT_TRKv06',
+     'HLT_TRKv06_skimmedTracks',
+     'HLT_TRKv06_TICL',
+     'HLT_TRKv06_TICL_skimmedTracks',
+   ]:
+     logmsg += '\n'+' '*4+recoArg
+   raise RuntimeError('invalid argument for option "reco": "'+opt_reco+'"'+logmsg+'\n')
+
+
+
+
+# skimming of tracks
+if opt_skimTracks:
+   from JMETriggerAnalysis.Common.hltPhase2_skimmedTracks import customize_hltPhase2_skimmedTracks
+   process = customize_hltPhase2_skimmedTracks(process)
+
+
+opt_BTVreco = opts.BTVreco
+if opt_BTVreco == 'default':
+      from RecoBTag.PerformanceMeasurements.Configs.hltPhase2_BTV import customize_hltPhase2_BTV
+      process = customize_hltPhase2_BTV(process)
+elif opt_BTVreco == 'cutsV1':
+      from RecoBTag.PerformanceMeasurements.Configs.hltPhase2_BTV_cuts import customize_hltPhase2_BTV
+      process = customize_hltPhase2_BTV(process)
+else:
+   raise RuntimeError('invalid argument for option "BTVreco": "'+opt_BTVreco+'"')
+
+
+###
+### trigger paths
+###
+
+## sequence: ParticleFlow
+process.HLTParticleFlowSequence = cms.Sequence(
+    process.localreco
+  + process.globalreco
+  + process.particleFlowReco
+)
+## sequence: AK4 Jets, PFCHS
+process.HLTAK4PFCHSJetsReconstruction = cms.Sequence(
+    process.particleFlowPtrs
+  + process.goodOfflinePrimaryVertices
+  + process.pfPileUpJME
+  + process.pfNoPileUpJME
+  + process.hltAK4PFCHSJets
+  + process.hltAK4PFCHSJetCorrectorL1
+  + process.hltAK4PFCHSJetCorrectorL2
+  + process.hltAK4PFCHSJetCorrectorL3
+  + process.hltAK4PFCHSJetCorrectorL2L3
+  + process.hltAK4PFCHSJetCorrector
+  + process.hltAK4PFCHSJetsCorrected
+)
+## sequence: AK4 Jets, Puppi
+process.HLTAK4PuppiJetsReconstruction = cms.Sequence(
+    process.hltPuppi
+  + process.hltAK4PuppiJets
+  + process.hltAK4PuppiJetCorrectorL1
+  + process.hltAK4PuppiJetCorrectorL2
+  + process.hltAK4PuppiJetCorrectorL3
+  + process.hltAK4PuppiJetCorrectorL2L3
+  + process.hltAK4PuppiJetCorrector
+  + process.hltAK4PuppiJetsCorrected
+)
+
+
+process.hltPFCHSCentralJetQuad30 = cms.EDFilter( "HLT1PFJet",
+    saveTags = cms.bool( True ),
+    MinPt = cms.double( 30.0 ),
+    MinN = cms.int32( 4 ),
+    MaxEta = cms.double( 2.5 ),
+    MinEta = cms.double( -1.0 ),
+    MinMass = cms.double( -1.0 ),
+    inputTag = cms.InputTag( "hltAK4PFCHSJetsCorrected" ),
+    MinE = cms.double( -1.0 ),
+    triggerType = cms.int32( 86 ), #??????????????????????
+    MaxMass = cms.double( -1.0 )
+)
+
+process.hlt1PFCHSCentralJet75 = cms.EDFilter( "HLT1PFJet",
+    saveTags = cms.bool( True ),
+    MinPt = cms.double( 75.0 ),
+    MinN = cms.int32( 1 ),
+    MaxEta = cms.double( 2.5 ),
+    MinEta = cms.double( -1.0 ),
+    MinMass = cms.double( -1.0 ),
+    inputTag = cms.InputTag( "hltAK4PFCHSJetsCorrected" ),
+    MinE = cms.double( -1.0 ),
+    triggerType = cms.int32( 0 ), #??????????????????????
+    MaxMass = cms.double( -1.0 )
+)
+
+process.hlt2PFCHSCentralJet60 = cms.EDFilter( "HLT1PFJet",
+    saveTags = cms.bool( True ),
+    MinPt = cms.double( 60.0 ),
+    MinN = cms.int32( 2 ),
+    MaxEta = cms.double( 2.5 ),
+    MinEta = cms.double( -1.0 ),
+    MinMass = cms.double( -1.0 ),
+    inputTag = cms.InputTag( "hltAK4PFCHSJetsCorrected" ),
+    MinE = cms.double( -1.0 ),
+    triggerType = cms.int32( 0 ), #??????????????????????
+    MaxMass = cms.double( -1.0 )
+)
+
+process.hlt3PFCHSCentralJet45 = cms.EDFilter( "HLT1PFJet",
+    saveTags = cms.bool( True ),
+    MinPt = cms.double( 45.0 ),
+    MinN = cms.int32( 3 ),
+    MaxEta = cms.double( 2.5 ),
+    MinEta = cms.double( -1.0 ),
+    MinMass = cms.double( -1.0 ),
+    inputTag = cms.InputTag( "hltAK4PFCHSJetsCorrected" ),
+    MinE = cms.double( -1.0 ),
+    triggerType = cms.int32( 0 ), #??????????????????????
+    MaxMass = cms.double( -1.0 )
+)
+
+process.hlt4PFCHSCentralJet40 = cms.EDFilter( "HLT1PFJet",
+    saveTags = cms.bool( True ),
+    MinPt = cms.double( 40.0 ),
+    MinN = cms.int32( 4 ),
+    MaxEta = cms.double( 2.5 ),
+    MinEta = cms.double( -1.0 ),
+    MinMass = cms.double( -1.0 ),
+    inputTag = cms.InputTag( "hltAK4PFCHSJetsCorrected" ),
+    MinE = cms.double( -1.0 ),
+    triggerType = cms.int32( 0 ), #??????????????????????
+    MaxMass = cms.double( -1.0 )
+)
+
+process.hltPFCHSCentralJetQuad30forHt = cms.EDProducer( "HLTPFJetCollectionProducer",
+    TriggerTypes = cms.vint32( 86 ), #??????????????????????
+    HLTObject = cms.InputTag( "hltPFCHSCentralJetQuad30" )
+)
+
+process.hltHtMhtPFCHSCentralJetsQuadC30 = cms.EDProducer( "HLTHtMhtProducer",
+    usePt = cms.bool( True ),
+    minPtJetHt = cms.double( 30.0 ),
+    maxEtaJetMht = cms.double( 999.0 ),
+    minNJetMht = cms.int32( 0 ),
+    jetsLabel = cms.InputTag( "hltPFCHSCentralJetQuad30forHt" ),
+    maxEtaJetHt = cms.double( 2.5 ),
+    minPtJetMht = cms.double( 0.0 ),
+    minNJetHt = cms.int32( 4 ),
+    pfCandidatesLabel = cms.InputTag("particleFlowTmp"),
+    excludePFMuons = cms.bool( False )
+)
+
+process.hltPFCHSCentralJetsQuad30HT330 = cms.EDFilter( "HLTHtMhtFilter",
+    saveTags = cms.bool( True ),
+    mhtLabels = cms.VInputTag( 'hltHtMhtPFCHSCentralJetsQuadC30' ),
+    meffSlope = cms.vdouble( 1.0 ),
+    minHt = cms.vdouble( 330.0 ),
+    minMht = cms.vdouble( 0.0 ),
+    htLabels = cms.VInputTag( 'hltHtMhtPFCHSCentralJetsQuadC30' ),
+    minMeff = cms.vdouble( 0.0 )
+)
+
+
+
+# modify simple BtagSequence
+process.hltDeepBLifetimeTagInfosPFMod = process.hltDeepBLifetimeTagInfosPF.clone(jets = "hltPFCHSJetForBtag")
+process.hltDeepSecondaryVertexTagInfosPFMod = process.hltDeepSecondaryVertexTagInfosPF.clone(trackIPTagInfos = "hltDeepBLifetimeTagInfosPFMod")
+process.hltDeepCombinedSecondaryVertexBJetTagsInfosMod = process.hltDeepCombinedSecondaryVertexBJetTagsInfos.clone(svTagInfos = "hltDeepSecondaryVertexTagInfosPFMod")
+process.hltDeepCombinedSecondaryVertexBJetTagsPFMod = process.hltDeepCombinedSecondaryVertexBJetTagsPF.clone(src = "hltDeepCombinedSecondaryVertexBJetTagsInfosMod")
+
+
+process.HLTBtagDeepCSVSequencePFMod = cms.Sequence(
+    process.hltPFCHSJetForBtagSelector
+    +process.hltPFCHSJetForBtag
+    +process.hltDeepBLifetimeTagInfosPFMod
+    +process.hltDeepInclusiveVertexFinderPF
+    +process.hltDeepInclusiveSecondaryVerticesPF
+    +process.hltDeepTrackVertexArbitratorPF
+    +process.hltDeepInclusiveMergedVerticesPF
+    +process.hltDeepSecondaryVertexTagInfosPFMod
+    +process.hltDeepCombinedSecondaryVertexBJetTagsInfosMod
+    +process.hltDeepCombinedSecondaryVertexBJetTagsPFMod)
+
+
+process.hltBTagPFCHSDeepCSV4p5Triple = cms.EDFilter( "HLTPFJetTag",
+    saveTags = cms.bool( True ),
+    MinJets = cms.int32( 3 ),
+    JetTags = cms.InputTag( 'hltDeepCombinedSecondaryVertexBJetTagsPFMod','probb' ),
+    TriggerType = cms.int32( 86 ), #??????????????????????
+    Jets = cms.InputTag( "hltPFCHSJetForBtag" ),
+    MinTag = cms.double( 0.24 ),
+    MaxTag = cms.double( 999999.0 )
+)
+
+
+process.hltPFPuppiCentralJetQuad30 = process.hltPFCHSCentralJetQuad30.clone(inputTag ="hltAK4PuppiJetsCorrected")
+
+process.hlt1PFPuppiCentralJet75 = process.hlt1PFCHSCentralJet75.clone(inputTag = "hltAK4PuppiJetsCorrected")
+
+process.hlt2PFPuppiCentralJet60 = process.hlt2PFCHSCentralJet60.clone(inputTag = "hltAK4PuppiJetsCorrected")
+
+process.hlt3PFPuppiCentralJet45 = process.hlt3PFCHSCentralJet45.clone(inputTag = "hltAK4PuppiJetsCorrected")
+
+process.hlt4PFPuppiCentralJet40 = process.hlt4PFCHSCentralJet40.clone(inputTag = "hltAK4PuppiJetsCorrected")
+
+process.hltPFPuppiCentralJetQuad30forHt = process.hltPFCHSCentralJetQuad30forHt.clone(HLTObject = "hltPFPuppiCentralJetQuad30" )
+
+process.hltHtMhtPFPuppiCentralJetsQuadC30 = process.hltHtMhtPFCHSCentralJetsQuadC30.clone(jetsLabel =  "hltPFPuppiCentralJetQuad30forHt")
+
+process.hltPFPuppiCentralJetsQuad30HT330 = cms.EDFilter( "HLTHtMhtFilter",
+    saveTags = cms.bool( True ),
+    mhtLabels = cms.VInputTag( 'hltHtMhtPFPuppiCentralJetsQuadC30' ),
+    meffSlope = cms.vdouble( 1.0 ),
+    minHt = cms.vdouble( 330.0 ),
+    minMht = cms.vdouble( 0.0 ),
+    htLabels = cms.VInputTag( 'hltHtMhtPFPuppiCentralJetsQuadC30' ),
+    minMeff = cms.vdouble( 0.0 )
+)
+process.hltDeepBLifetimeTagInfosPFPuppiMod = process.hltDeepBLifetimeTagInfosPFPuppi.clone(jets = "hltPFPuppiJetForBtag")
+process.hltDeepSecondaryVertexTagInfosPFPuppiMod = process.hltDeepSecondaryVertexTagInfosPF.clone(trackIPTagInfos = "hltDeepBLifetimeTagInfosPFPuppiMod")
+process.hltDeepCombinedSecondaryVertexBJetTagsInfosPuppiMod = process.hltDeepCombinedSecondaryVertexBJetTagsInfos.clone(svTagInfos = "hltDeepSecondaryVertexTagInfosPFPuppiMod")
+process.hltDeepCombinedSecondaryVertexBJetTagsPFPuppiMod = process.hltDeepCombinedSecondaryVertexBJetTagsPF.clone(src = "hltDeepCombinedSecondaryVertexBJetTagsInfosPuppiMod")
+
+process.HLTBtagDeepCSVSequencePFPuppiMod = cms.Sequence(
+    process.hltPFPuppiJetForBtagSelector
+    +process.hltPFPuppiJetForBtag
+    +process.hltDeepBLifetimeTagInfosPFPuppiMod
+    +process.hltDeepInclusiveVertexFinderPF
+    +process.hltDeepInclusiveSecondaryVerticesPF
+    +process.hltDeepTrackVertexArbitratorPF
+    +process.hltDeepInclusiveMergedVerticesPF
+    +process.hltDeepSecondaryVertexTagInfosPFPuppiMod
+    +process.hltDeepCombinedSecondaryVertexBJetTagsInfosPuppiMod
+    +process.hltDeepCombinedSecondaryVertexBJetTagsPFPuppiMod)
+
+
+process.hltBTagPFPuppiDeepCSV4p5Triple = cms.EDFilter( "HLTPFJetTag",
+    saveTags = cms.bool( True ),
+    MinJets = cms.int32( 3 ),
+    JetTags = cms.InputTag( 'hltDeepCombinedSecondaryVertexBJetTagsPFPuppiMod','probb' ),
+    TriggerType = cms.int32( 86 ), #??????????????????????
+    Jets = cms.InputTag( "hltPFPuppiJetForBtag" ),
+    MinTag = cms.double( 0.24 ),
+    MaxTag = cms.double( 999999.0 )
+)
+
+
+
+
+
+process.hltDoublePFCHSJets128Eta2p3 = cms.EDFilter( "HLT1PFJet",
+    saveTags = cms.bool( True ),
+    MinPt = cms.double( 128.0 ),
+    MinN = cms.int32( 2 ),
+    MaxEta = cms.double( 2.3 ),
+    MinEta = cms.double( -1.0 ),
+    MinMass = cms.double( -1.0 ),
+    inputTag = cms.InputTag( "hltAK4PFCHSJetsCorrected" ),
+    MinE = cms.double( -1.0 ),
+    triggerType = cms.int32( 85 ),
+    MaxMass = cms.double( -1.0 )
+)
+
+process.hltDoublePFCHSJets128Eta2p3MaxDeta1p6 = cms.EDFilter( "HLT2PFJetPFJet",
+    saveTags = cms.bool( True ),
+    MinMinv = cms.double( 0.0 ),
+    originTag2 = cms.VInputTag( 'hltAK4PFCHSJetsCorrected' ),
+    MinDelR = cms.double( 0.0 ),
+    MinPt = cms.double( 0.0 ),
+    MinN = cms.int32( 1 ),
+    originTag1 = cms.VInputTag( 'hltAK4PFCHSJetsCorrected' ),
+    triggerType1 = cms.int32( 85 ),
+    triggerType2 = cms.int32( 85 ),
+    MaxMinv = cms.double( 1.0E7 ),
+    MinDeta = cms.double( -1000.0 ),
+    MaxDelR = cms.double( 1000.0 ),
+    inputTag1 = cms.InputTag( "hltDoublePFCHSJets128Eta2p3" ),
+    inputTag2 = cms.InputTag( "hltDoublePFCHSJets128Eta2p3" ),
+    MaxDphi = cms.double( 1.0E7 ),
+    MaxDeta = cms.double( 1.6 ),
+    MaxPt = cms.double( 1.0E7 ),
+    MinDphi = cms.double( 0.0 )
+)
+
+process.hltSelectorPFCHSJets80L1FastJet = cms.EDFilter( "EtMinPFJetSelector",
+    filter = cms.bool( False ),
+    src = cms.InputTag( "hltAK4PFCHSJetsCorrected" ),
+    etMin = cms.double( 80.0 )
+)
+
+process.hltSelector6PFCHSCentralJetsL1FastJet = cms.EDFilter( "LargestEtPFJetSelector",
+    maxNumber = cms.uint32( 6 ),
+    filter = cms.bool( False ),
+    src = cms.InputTag( "hltSelectorPFCHSJets80L1FastJet" )
+)
+
+process.hltBTagPFCHSDeepCSV0p71Double6Jets80 = cms.EDFilter( "HLTPFJetTagWithMatching",
+    saveTags = cms.bool( True ),
+    deltaR = cms.double( 10.0 ),
+    MinJets = cms.int32( 2 ),
+    JetTags = cms.InputTag( 'hltDeepCombinedSecondaryVertexBJetTagsPFMod','probb' ),
+    TriggerType = cms.int32( 86 ),
+    Jets = cms.InputTag( "hltSelector6PFCHSCentralJetsL1FastJet" ),
+    MinTag = cms.double( 0.52 ),
+    MaxTag = cms.double( 999999.0 )
+)
+
+
+
+process.hltDoublePFPuppiJets128Eta2p3 = process.hltDoublePFCHSJets128Eta2p3.clone(
+    inputTag = "hltAK4PuppiJetsCorrected",
+)
+process.hltDoublePFPuppiJets128Eta2p3MaxDeta1p6 =  cms.EDFilter( "HLT2PFJetPFJet",
+    saveTags = cms.bool( True ),
+    MinMinv = cms.double( 0.0 ),
+    originTag2 = cms.VInputTag( 'hltAK4PuppiJetsCorrected' ),
+    MinDelR = cms.double( 0.0 ),
+    MinPt = cms.double( 0.0 ),
+    MinN = cms.int32( 1 ),
+    originTag1 = cms.VInputTag( 'hltAK4PuppiJetsCorrected' ),
+    triggerType1 = cms.int32( 85 ),
+    triggerType2 = cms.int32( 85 ),
+    MaxMinv = cms.double( 1.0E7 ),
+    MinDeta = cms.double( -1000.0 ),
+    MaxDelR = cms.double( 1000.0 ),
+    inputTag1 = cms.InputTag( "hltDoublePFPuppiJets128Eta2p3" ),
+    inputTag2 = cms.InputTag( "hltDoublePFPuppiJets128Eta2p3" ),
+    MaxDphi = cms.double( 1.0E7 ),
+    MaxDeta = cms.double( 1.6 ),
+    MaxPt = cms.double( 1.0E7 ),
+    MinDphi = cms.double( 0.0 )
+)
+
+process.hltSelectorPFPuppiJets80L1FastJet = process.hltSelectorPFCHSJets80L1FastJet.clone(
+    src = "hltAK4PuppiJetsCorrected"
+)
+process.hltSelector6PFPuppiCentralJetsL1FastJet = process.hltSelector6PFCHSCentralJetsL1FastJet.clone(
+    src = "hltSelectorPFPuppiJets80L1FastJet"
+)
+process.hltBTagPFPuppiDeepCSV0p71Double6Jets80 = cms.EDFilter( "HLTPFJetTagWithMatching",
+    saveTags = cms.bool( True ),
+    deltaR = cms.double( 10.0 ),
+    MinJets = cms.int32( 2 ),
+    JetTags = cms.InputTag( 'hltDeepCombinedSecondaryVertexBJetTagsPFPuppiMod','probb' ),
+    TriggerType = cms.int32( 86 ),
+    Jets = cms.InputTag( "hltSelector6PFPuppiCentralJetsL1FastJet" ),
+    MinTag = cms.double( 0.52 ),
+    MaxTag = cms.double( 999999.0 )
+)
+
+
+## paths
+process.HLT_PFHT330PT30_QuadPFCHSJet_75_60_45_40_TriplePFCHSBTagDeepCSV_4p5_v1 = cms.Path(
+    process.HLTParticleFlowSequence
+    +process.HLTAK4PFCHSJetsReconstruction
+    +process.hltPFCHSCentralJetQuad30
+    +process.hlt1PFCHSCentralJet75
+    +process.hlt2PFCHSCentralJet60
+    +process.hlt3PFCHSCentralJet45
+    +process.hlt4PFCHSCentralJet40
+    +process.hltPFCHSCentralJetQuad30forHt
+    +process.hltHtMhtPFCHSCentralJetsQuadC30
+    +process.hltPFCHSCentralJetsQuad30HT330 #problematic???
+    +process.HLTBtagDeepCSVSequencePFMod
+    +process.hltBTagPFCHSDeepCSV4p5Triple
+)
+
+process.HLT_PFHT330PT30_QuadPFPuppiJet_75_60_45_40_TriplePFPuppiBTagDeepCSV_4p5_v1 = cms.Path(
+    process.HLTParticleFlowSequence
+    +process.HLTAK4PuppiJetsReconstruction
+    +process.hltPFPuppiCentralJetQuad30
+    +process.hlt1PFPuppiCentralJet75
+    +process.hlt2PFPuppiCentralJet60
+    +process.hlt3PFPuppiCentralJet45
+    +process.hlt4PFPuppiCentralJet40
+    +process.hltPFPuppiCentralJetQuad30forHt
+    +process.hltHtMhtPFPuppiCentralJetsQuadC30
+    +process.hltPFPuppiCentralJetsQuad30HT330  #problematic???
+    +process.HLTBtagDeepCSVSequencePFPuppiMod
+    +process.hltBTagPFPuppiDeepCSV4p5Triple
+)
+
+process.HLT_DoublePFCHSJets128MaxDeta1p6_DoublePFCHSBTagDeepCSV_p71_v1 = cms.Path(
+    process.HLTParticleFlowSequence
+    +process.HLTAK4PFCHSJetsReconstruction
+    +process.hltSelectorPFCHSJets80L1FastJet
+    +process.hltSelector6PFCHSCentralJetsL1FastJet
+    +process.hltDoublePFCHSJets128Eta2p3
+    +process.hltDoublePFCHSJets128Eta2p3MaxDeta1p6
+    +process.HLTBtagDeepCSVSequencePFMod
+    + process.hltBTagPFCHSDeepCSV0p71Double6Jets80
+)
+
+process.HLT_DoublePFPuppiJets128MaxDeta1p6_DoublePFPuppiBTagDeepCSV_p71_v1 = cms.Path(
+    process.HLTParticleFlowSequence
+    +process.HLTAK4PuppiJetsReconstruction
+    +process.hltSelectorPFPuppiJets80L1FastJet
+    +process.hltSelector6PFPuppiCentralJetsL1FastJet
+    +process.hltDoublePFPuppiJets128Eta2p3
+    +process.hltDoublePFPuppiJets128Eta2p3MaxDeta1p6
+    +process.HLTBtagDeepCSVSequencePFPuppiMod
+    + process.hltBTagPFPuppiDeepCSV0p71Double6Jets80
+)
+
+
+
+
+###
+### job configuration (input, output, GT, etc)
+###
+
+# update process.GlobalTag.globaltag
+if opts.globalTag is not None:
+   process.GlobalTag.globaltag = opts.globalTag
+
+# fix for AK4PF Phase-2 JECs
+process.GlobalTag.toGet.append(cms.PSet(
+  record = cms.string('JetCorrectionsRecord'),
+  tag = cms.string('JetCorrectorParametersCollection_PhaseIIFall17_V5b_MC_AK4PF'),
+  label = cms.untracked.string('AK4PF'),
+))
+
+# max number of events to be processed
+process.maxEvents.input = opts.maxEvents
+
+# number of events to be skipped
+process.source.skipEvents = cms.untracked.uint32(opts.skipEvents)
+
+# multi-threading settings
+process.options.numberOfThreads = cms.untracked.uint32(opts.numThreads if (opts.numThreads > 1) else 1)
+process.options.numberOfStreams = cms.untracked.uint32(opts.numStreams if (opts.numStreams > 1) else 1)
+
+# show cmsRun summary at job completion
+process.options.wantSummary = cms.untracked.bool(opts.wantSummary)
+
+# EDM input
+if opts.inputFiles:
+   process.source.fileNames = opts.inputFiles
+else:
+   process.source.fileNames = [
+     # '/store/mc/Phase2HLTTDRWinter20DIGI/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/GEN-SIM-DIGI-RAW/PU200_castor_110X_mcRun4_realistic_v3-v2/10000/02C1FCCC-315F-404C-ABF7-A65154C46C28.root',
+     '/store/mc/Phase2HLTTDRWinter20DIGI/QCD_Pt_30to50_TuneCP5_14TeV_pythia8/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v2/40000/0013F717-1DFF-ED45-B881-E11B000895C6.root',
+   ]
+
+# EDM output
+process.RECOoutput = cms.OutputModule('PoolOutputModule',
+  dataset = cms.untracked.PSet(
+    dataTier = cms.untracked.string('RECO'),
+    filterName = cms.untracked.string('')
+  ),
+  fileName = cms.untracked.string(opts.output),
+  outputCommands = cms.untracked.vstring((
+    'drop *',
+    'keep edmTriggerResults_*_*_*',
+  )),
+  splitLevel = cms.untracked.int32(0)
+)
+
+process.RECOoutput_step = cms.EndPath(process.RECOoutput)
+## schedule
+process.schedule = cms.Schedule(*[
+  process.raw2digi_step,
+  # process.reconstruction_step,
+  process.HLT_PFHT330PT30_QuadPFCHSJet_75_60_45_40_TriplePFCHSBTagDeepCSV_4p5_v1,
+  process.HLT_PFHT330PT30_QuadPFPuppiJet_75_60_45_40_TriplePFPuppiBTagDeepCSV_4p5_v1,
+  process.HLT_DoublePFCHSJets128MaxDeta1p6_DoublePFCHSBTagDeepCSV_p71_v1,
+  process.HLT_DoublePFPuppiJets128MaxDeta1p6_DoublePFPuppiBTagDeepCSV_p71_v1,
+  process.RECOoutput_step,
+  process.endjob_step
+])
+# process.RECOoutput_step = cms.EndPath(process.RECOoutput)
+# process.schedule.append(process.RECOoutput_step)
+# process.schedule.append(process.endjob_step)
+
+# dump content of cms.Process to python file
+if opts.dumpPython is not None:
+   open(opts.dumpPython, 'w').write(process.dumpPython())

@@ -60,10 +60,10 @@ opts.register('L1', True,
               vpo.VarParsing.varType.bool,
               'run L1 trigger')
 
-opts.register('FastPV', False,
+opts.register('BTVreco', 'default',
               vpo.VarParsing.multiplicity.singleton,
-              vpo.VarParsing.varType.bool,
-              'use noFilter DeepCSv sequences with FastPV')
+              vpo.VarParsing.varType.string,
+              'which reco to load for BTV sequence, default = default')
 
 opts.register('pfdqm', True,
               vpo.VarParsing.multiplicity.singleton,
@@ -83,19 +83,33 @@ if opt_reco.endswith('_skimmedTracks'):
    opt_skimTracks = True
 
 if opt_reco == 'hltPhase2_TRKv00':
-   from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv00_cfg import cms, process
+   from RecoBTag.PerformanceMeasurements.Configs.hltPhase2_TRKv00_cfg import cms, process
 elif opt_reco == 'hltPhase2_TRKv02':
-   from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv02_cfg import cms, process
+   from RecoBTag.PerformanceMeasurements.Configs.hltPhase2_TRKv02_cfg import cms, process
 elif opt_reco == 'hltPhase2_TRKv06':
-   from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv06_cfg import cms, process
+   from RecoBTag.PerformanceMeasurements.Configs.hltPhase2_TRKv06_cfg import cms, process
 elif opt_reco == 'hltPhase2_TRKv00_TICL':
-   from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv00_TICL_cfg import cms, process
+   from RecoBTag.PerformanceMeasurements.Configs.hltPhase2_TRKv00_TICL_cfg import cms, process
 elif opt_reco == 'hltPhase2_TRKv02_TICL':
-   from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv02_TICL_cfg import cms, process
+   from RecoBTag.PerformanceMeasurements.Configs.hltPhase2_TRKv02_TICL_cfg import cms, process
 elif opt_reco == 'hltPhase2_TRKv06_TICL':
-   from RecoBTag.PerformanceMeasurements.hltPhase2_TRKv06_TICL_cfg import cms, process
+   from RecoBTag.PerformanceMeasurements.Configs.hltPhase2_TRKv06_TICL_cfg import cms, process
 else:
    raise RuntimeError('invalid argument for option "reco": "'+opt_reco+'"')
+
+opt_BTVreco = opts.BTVreco
+if opt_BTVreco == 'default':
+      from RecoBTag.PerformanceMeasurements.Configs.hltPhase2_BTV import customize_hltPhase2_BTV
+      process = customize_hltPhase2_BTV(process)
+elif opt_BTVreco == 'cutsV1':
+      from RecoBTag.PerformanceMeasurements.Configs.hltPhase2_BTV_cuts import customize_hltPhase2_BTV
+      process = customize_hltPhase2_BTV(process)
+else:
+   raise RuntimeError('invalid argument for option "BTVreco": "'+opt_BTVreco+'"')
+
+
+
+
 
 # reset path to EDM input files
 process.source.fileNames = []
@@ -110,20 +124,20 @@ if opts.L1:
    from JMETriggerAnalysis.Common.hltPhase2_L1 import customize_hltPhase2_L1
    process = customize_hltPhase2_L1(process)
 
-if opts.FastPV:
-    process.noFilter_PFDeepCSV = cms.Path(process.HLTBtagDeepCSVSequencePFFastPV)
-    process.noFilter_PFProba = cms.Path(process.HLTBtagProbabiltySequencePFFastPV)
-    process.noFilter_PFBProba = cms.Path(process.HLTBtagBProbabiltySequencePFFastPV)
-    process.noFilter_PFDeepCSVPuppi = cms.Path(process.HLTBtagDeepCSVSequencePFPuppiFastPV)
-    process.noFilter_PFProbaPuppi = cms.Path(process.HLTBtagProbabiltySequencePFPuppiFastPV)
-    process.noFilter_PFBProbaPuppi = cms.Path(process.HLTBtagBProbabiltySequencePFPuppiFastPV)
-else:
-    process.noFilter_PFDeepCSV = cms.Path(process.HLTBtagDeepCSVSequencePF)
-    process.noFilter_PFProba = cms.Path(process.HLTBtagProbabiltySequencePF)
-    process.noFilter_PFBProba = cms.Path(process.HLTBtagBProbabiltySequencePF)
-    process.noFilter_PFDeepCSVPuppi = cms.Path(process.HLTBtagDeepCSVSequencePFPuppi)
-    process.noFilter_PFProbaPuppi = cms.Path(process.HLTBtagProbabiltySequencePFPuppi)
-    process.noFilter_PFBProbaPuppi = cms.Path(process.HLTBtagBProbabiltySequencePFPuppi)
+# if opts.FastPV:
+#     process.noFilter_PFDeepCSV = cms.Path(process.HLTBtagDeepCSVSequencePFFastPV)
+#     process.noFilter_PFProba = cms.Path(process.HLTBtagProbabiltySequencePFFastPV)
+#     process.noFilter_PFBProba = cms.Path(process.HLTBtagBProbabiltySequencePFFastPV)
+#     process.noFilter_PFDeepCSVPuppi = cms.Path(process.HLTBtagDeepCSVSequencePFPuppiFastPV)
+#     process.noFilter_PFProbaPuppi = cms.Path(process.HLTBtagProbabiltySequencePFPuppiFastPV)
+#     process.noFilter_PFBProbaPuppi = cms.Path(process.HLTBtagBProbabiltySequencePFPuppiFastPV)
+# else:
+process.noFilter_PFDeepCSV = cms.Path(process.HLTBtagDeepCSVSequencePF)
+process.noFilter_PFProba = cms.Path(process.HLTBtagProbabiltySequencePF)
+process.noFilter_PFBProba = cms.Path(process.HLTBtagBProbabiltySequencePF)
+process.noFilter_PFDeepCSVPuppi = cms.Path(process.HLTBtagDeepCSVSequencePFPuppi)
+process.noFilter_PFProbaPuppi = cms.Path(process.HLTBtagProbabiltySequencePFPuppi)
+process.noFilter_PFBProbaPuppi = cms.Path(process.HLTBtagBProbabiltySequencePFPuppi)
 
 process.schedule.extend([process.noFilter_PFDeepCSV, process.noFilter_PFProba, process.noFilter_PFBProba])
 process.schedule.extend([process.noFilter_PFDeepCSVPuppi, process.noFilter_PFProbaPuppi, process.noFilter_PFBProbaPuppi])
@@ -194,7 +208,25 @@ if opts.inputFiles:
    process.source.fileNames = opts.inputFiles
 else:
    process.source.fileNames = [
-     "/store/mc/Phase2HLTTDRWinter20DIGI/TTToSemiLepton_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/NoPU_110X_mcRun4_realistic_v3-v2/20000/2FA69DD4-0651-084E-87B6-E5F38B007D5D.root",
+     # "/store/mc/Phase2HLTTDRWinter20DIGI/TTToSemiLepton_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/NoPU_110X_mcRun4_realistic_v3-v2/20000/2FA69DD4-0651-084E-87B6-E5F38B007D5D.root",
+     # ttbar NoPu
+     # "/store/mc/Phase2HLTTDRWinter20DIGI/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/NoPU_110X_mcRun4_realistic_v3-v2/40000/FF494CD0-A72D-494F-8C89-8C6422D24504.root",
+     # "/store/mc/Phase2HLTTDRWinter20DIGI/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/NoPU_110X_mcRun4_realistic_v3-v2/40000/FF1F2446-2FDB-5E4A-8CBE-A5E62A4518C2.root",
+     # "/store/mc/Phase2HLTTDRWinter20DIGI/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/NoPU_110X_mcRun4_realistic_v3-v2/40000/FD048324-6F32-D944-B680-3633DBD45186.root",
+     # "/store/mc/Phase2HLTTDRWinter20DIGI/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/NoPU_110X_mcRun4_realistic_v3-v2/40000/FC872EC1-9102-8545-A726-DDA51C276E6C.root",
+     # "/store/mc/Phase2HLTTDRWinter20DIGI/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/NoPU_110X_mcRun4_realistic_v3-v2/40000/FBBEC820-DA08-AA44-8BC6-0469ED6C0D74.root",
+     # "/store/mc/Phase2HLTTDRWinter20DIGI/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/NoPU_110X_mcRun4_realistic_v3-v2/40000/FA97BECF-51BE-7146-9946-B0560434E42B.root",
+     # "/store/mc/Phase2HLTTDRWinter20DIGI/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/NoPU_110X_mcRun4_realistic_v3-v2/40000/F9F5095B-DC0A-6F48-8148-E221616F0C9E.root",
+
+     # ttbarPU200
+     "/store/mc/Phase2HLTTDRWinter20DIGI/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v2/240001/BCAB284F-B065-F343-9E48-478FDFBA70A0.root",
+     "/store/mc/Phase2HLTTDRWinter20DIGI/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v2/240000/FFE0A906-20D1-764B-BA0E-CB0E4CC062D3.root",
+     "/store/mc/Phase2HLTTDRWinter20DIGI/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v2/240000/FFCD7B10-9213-D746-B800-FD3F4A963297.root",
+     "/store/mc/Phase2HLTTDRWinter20DIGI/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v2/240000/FF55BD2C-752F-424E-BD6A-238F8CF2B0A1.root",
+     "/store/mc/Phase2HLTTDRWinter20DIGI/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v2/240000/FFB39BB4-5A91-2E46-B53A-415EE63A6DB8.root",
+     "/store/mc/Phase2HLTTDRWinter20DIGI/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v2/240000/FF3DA176-02DA-224A-84AD-9FE986A028E4.root",
+     "/store/mc/Phase2HLTTDRWinter20DIGI/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v2/240000/FF27A61A-E4BF-414A-8A82-AEDABD724723.root",
+
    ]
 
 
@@ -208,7 +240,8 @@ else:
 ###############################
 
 groups = ["HLTEventInfo","HLTJetInfo","HLTTagVar","HLTJetTrack","HLTJetSV","HLTCSVTagVar"]
-
+if opts.L1:
+    groups.append("L1ObjectInfo")
 
 
 from RecoBTag.PerformanceMeasurements.BTagAnalyzer_cff import *
@@ -281,6 +314,22 @@ process.btagana.primaryVertexColl     = cms.InputTag('offlinePrimaryVertices') #
 process.btagana.runHLTJetVariables     = cms.bool(True)
 process.btagana.runOnData = False
 
+# if opts.FastPV:
+    # process.btagana.PFJets               = cms.InputTag('hltAK4PFCHSJetsCorrected')
+    # process.btagana.PFJetTags            = cms.InputTag('hltDeepCombinedSecondaryVertexBJetTagsInfosFastPV')
+    # process.btagana.PFSVs                = cms.InputTag('hltDeepSecondaryVertexTagInfosPFFastPV')
+    # process.btagana.PFJetDeepCSVTags     = cms.InputTag('hltDeepCombinedSecondaryVertexBJetTagsPFFastPV:probb')
+    # process.btagana.PFJetBPBJetTags      = cms.InputTag('hltPfJetBProbabilityBJetTagsFastPV')
+    # process.btagana.PFJetPBJetTags       = cms.InputTag('hltPfJetProbabilityBJetTagsFastPV')
+    #
+    # process.btagana.PuppiJets            = cms.InputTag('hltAK4PuppiJetsCorrected')
+    # process.btagana.PuppiJetTags         = cms.InputTag('hltDeepCombinedSecondaryVertexBJetTagsInfosPuppiFastPV')
+    # process.btagana.PuppiSVs             = cms.InputTag('hltDeepSecondaryVertexTagInfosPFPuppiFastPV')
+    # process.btagana.PuppiJetDeepCSVTags  = cms.InputTag('hltDeepCombinedSecondaryVertexBJetTagsPFPuppiFastPV:probb')
+    # process.btagana.PuppiJetBPBJetTags   = cms.InputTag('hltPfJetBProbabilityBJetTagsPuppiFastPV')
+    # process.btagana.PuppiJetPBJetTags    = cms.InputTag('hltPfJetProbabilityBJetTagsPuppiFastPV')
+    # process.btagana.PuppiJetCSVTags      = cms.InputTag('hltDeepCombinedSecondaryVertexBJetTagsPFPuppiFastPV')
+# else:
 process.btagana.PFJets               = cms.InputTag('hltAK4PFCHSJetsCorrected')
 process.btagana.PFJetTags            = cms.InputTag('hltDeepCombinedSecondaryVertexBJetTagsInfos')
 process.btagana.PFSVs                = cms.InputTag('hltDeepSecondaryVertexTagInfosPF')
@@ -295,6 +344,13 @@ process.btagana.PuppiJetDeepCSVTags  = cms.InputTag('hltDeepCombinedSecondaryVer
 process.btagana.PuppiJetBPBJetTags   = cms.InputTag('hltPfJetBProbabilityBJetTagsPuppi')
 process.btagana.PuppiJetPBJetTags    = cms.InputTag('hltPfJetProbabilityBJetTagsPuppi')
 process.btagana.PuppiJetCSVTags      = cms.InputTag('hltCombinedSecondaryVertexBJetTagsPFPuppi')
+
+process.btagana.analyzeL1Objects     =  cms.bool(opts.L1)
+process.btagana.L1VertexColl         =  cms.InputTag('L1TkPrimaryVertex')
+process.btagana.L1BarrelTrackColl    =  cms.InputTag('pfTracksFromL1TracksBarrel')
+process.btagana.L1HGcalTrackColl     =  cms.InputTag('pfTracksFromL1TracksHGCal')
+process.btagana.L1PFJets             =  cms.InputTag('ak4PFL1PFCorrected')
+process.btagana.L1PuppiJets          =  cms.InputTag('ak4PFL1PuppiCorrected')
 
 #---------------------------------------
 ## Event counter
@@ -457,4 +513,5 @@ print 'doTrackHistos =', opts.trkdqm
 print 'rerunL1 =', opts.L1
 print 'doParticleFlowHistos =', opts.pfdqm
 print 'option: reco =', opt_reco, '(skimTracks = '+str(opt_skimTracks)+')'
+print 'option: BTVreco =', opt_BTVreco
 print '\n-------------------------------'
