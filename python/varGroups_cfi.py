@@ -2629,7 +2629,49 @@ groupSet = cms.PSet(
       ),
 
 
+cms.PSet(
+  group       = cms.string("L1ObjectInfo"),
+  store       = cms.bool(False),
+  description = cms.string("L1Object Variables"),
+  variables   = cms.vstring(
+    "nL1_BarrelTracks",
+    "L1_BarrelTrack_pt",
+    "L1_BarrelTrack_eta",
+    "L1_BarrelTrack_phi",
+    "L1_BarrelTrack_m",
+    "L1_BarrelTrack_dz",
+    "L1_BarrelTrack_dxy",
 
+    "nL1_HGCalTracks",
+    "L1_HGCalTrack_pt",
+    "L1_HGCalTrack_eta",
+    "L1_HGCalTrack_phi",
+    "L1_HGCalTrack_m",
+    "L1_HGCalTrack_dz",
+    "L1_HGCalTrack_dxy",
+
+    "nL1_Vertices",
+    "L1_Vertex_z",
+    "L1_Vertex_sum",
+
+    "nL1_PFJets",
+    "L1_PFJets_pt",
+    "L1_PFJets_eta",
+    "L1_PFJets_phi",
+    "L1_PFJets_m",
+    "L1_PFJets_dxy",
+    "L1_PFJets_dz",
+
+    "nL1_PuppiJets",
+    "L1_PuppiJets_pt",
+    "L1_PuppiJets_eta",
+    "L1_PuppiJets_phi",
+    "L1_PuppiJets_m",
+    "L1_PuppiJets_dxy",
+    "L1_PuppiJets_dz",
+
+            ),
+  ),
 
 
 #More or less complete list of available variables. Only intended as template for creating your own variable group

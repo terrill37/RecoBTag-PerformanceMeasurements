@@ -128,7 +128,7 @@ class JetInfoBranches {
     int   Jet_histSvx[nMaxJets_];
     int   Jet_ntracks[nMaxJets_];
     int   Jet_nseltracks[nMaxJets_];
-    int   Jet_flavour[nMaxJets_];	
+    int   Jet_flavour[nMaxJets_];
     int   Jet_flavourCleaned[nMaxJets_];
     int   Jet_partonFlavour[nMaxJets_];
     int   Jet_hadronFlavour[nMaxJets_];
@@ -205,7 +205,7 @@ class JetInfoBranches {
     float Jet_tau1_vertexMass_corrected[nMaxJets_];
     float Jet_tau2_vertexMass_corrected[nMaxJets_];
     float Jet_tau1_vertexNTracks[nMaxJets_];
-    float Jet_tau2_vertexNTracks[nMaxJets_];    
+    float Jet_tau2_vertexNTracks[nMaxJets_];
     int   Jet_nFirstTrkTagVar[nMaxJets_];
     int   Jet_nLastTrkTagVar[nMaxJets_];
     int   Jet_nFirstSVTagVar[nMaxJets_];
@@ -275,11 +275,11 @@ class JetInfoBranches {
     float Track_SVweight[nMaxTrk_];
     int   Track_isfromV0[nMaxTrk_];
     float Track_lengthTau[nMaxTrk_];
-    float Track_distTau[nMaxTrk_];    
+    float Track_distTau[nMaxTrk_];
     int   Track_category[nMaxTrk_];
     int   Track_algo[nMaxTrk_];
     int   Track_originalAlgo[nMaxTrk_];
-    
+
     float Track_TPAssociationQuality[nMaxTrk_];
     int	  Track_idxMatchedTP[nMaxTrk_];
     int   nTrackTruth;
@@ -601,7 +601,7 @@ class JetInfoBranches {
     int   Jet_nLastTrkEtaRelCTagVar[nMaxJets_];
     int   Jet_nFirstLepCTagVar[nMaxJets_];
     int   Jet_nLastLepCTagVar[nMaxJets_];
-    //per jet    
+    //per jet
     float CTag_Jet_CvsB[nMaxJets_];
     float CTag_Jet_CvsBN[nMaxJets_];
     float CTag_Jet_CvsBP[nMaxJets_];
@@ -610,7 +610,7 @@ class JetInfoBranches {
     float CTag_Jet_CvsLP[nMaxJets_];
     float CTag_jetNTracks[nMaxJets_];
     float CTag_jetNTracksEtaRel[nMaxJets_];
-    float CTag_jetNLeptons[nMaxJets_]; 
+    float CTag_jetNLeptons[nMaxJets_];
     float CTag_trackSumJetEtRatio[nMaxJets_];
     float CTag_trackSumJetDeltaR[nMaxJets_];
     float CTag_trackSip2dSigAboveCharm[nMaxJets_];
@@ -1719,13 +1719,13 @@ class JetInfoBranches {
      if(variableParser.isToBeStored(name+"DeepDoubleXInput_charged_Sip3dVal")) tree->SetBranchAddress((name+"DeepDoubleXInput_charged_Sip3dVal").c_str(), DeepDoubleXInput_charged_Sip3dVal );
      if(variableParser.isToBeStored(name+"DeepDoubleXInput_charged_Sip3dSig")) tree->SetBranchAddress((name+"DeepDoubleXInput_charged_Sip3dSig").c_str(), DeepDoubleXInput_charged_Sip3dSig );
      if(variableParser.isToBeStored(name+"DeepDoubleXInput_charged_JetDistVal")) tree->SetBranchAddress((name+"DeepDoubleXInput_charged_JetDistVal").c_str(), DeepDoubleXInput_charged_JetDistVal );
- 
+
      if(variableParser.isToBeStored(name+"nSVDeepDoubleX")) tree->SetBranchAddress((name+"nSVDeepDoubleX").c_str()           ,&nSVDeepDoubleX          );
      if(variableParser.isToBeStored(name+"Jet_DeepDoubleX_nFirstSVTagVar")) tree->SetBranchAddress((name+"Jet_DeepDoubleX_nFirstSVTagVar").c_str()   ,Jet_DeepDoubleX_nFirstSVTagVar   );
      if(variableParser.isToBeStored(name+"Jet_DeepDoubleX_nLastSVTagVar")) tree->SetBranchAddress((name+"Jet_DeepDoubleX_nLastSVTagVar").c_str()    ,Jet_DeepDoubleX_nLastSVTagVar    );
      if(variableParser.isToBeStored(name+"DeepDoubleXInput_sv_d3d")) tree->SetBranchAddress((name+"DeepDoubleXInput_sv_d3d").c_str(), DeepDoubleXInput_sv_d3d );
      if(variableParser.isToBeStored(name+"DeepDoubleXInput_sv_d3dsig")) tree->SetBranchAddress((name+"DeepDoubleXInput_sv_d3dsig").c_str(), DeepDoubleXInput_sv_d3dsig );
- 
+
  	////// DeepBoostedJet
  	//
      if(variableParser.isToBeStored(name+"nTrkDeepBoostedJet")) tree->SetBranchAddress((name+"nTrkDeepBoostedJet").c_str(), &nTrkDeepBoostedJet );
@@ -1770,7 +1770,7 @@ class JetInfoBranches {
      if(variableParser.isToBeStored(name+"DeepBoostedJetInput_pf_btagSip3dVal")) tree->SetBranchAddress((name+"DeepBoostedJetInput_pf_btagSip3dVal").c_str(), DeepBoostedJetInput_pf_btagSip3dVal );
      if(variableParser.isToBeStored(name+"DeepBoostedJetInput_pf_btagSip3dSig")) tree->SetBranchAddress((name+"DeepBoostedJetInput_pf_btagSip3dSig").c_str(), DeepBoostedJetInput_pf_btagSip3dSig );
      if(variableParser.isToBeStored(name+"DeepBoostedJetInput_pf_btagJetDistVal")) tree->SetBranchAddress((name+"DeepBoostedJetInput_pf_btagJetDistVal").c_str(), DeepBoostedJetInput_pf_btagJetDistVal );
- 
+
 
       ////// DeepDoubleX input variables
       if(variableParser.isToBeStored(name+"DeepDoubleXInput_jetNTracks")) tree->SetBranchAddress((name+"DeepDoubleXInput_jetNTracks").c_str(), DeepDoubleXInput_jetNTracks );

@@ -39,6 +39,13 @@
 #include "DataFormats/GeometrySurface/interface/Line.h"
 #include "DataFormats/GeometryCommonDetAlgo/interface/Measurement1D.h"
 
+#include "DataFormats/L1TCorrelator/interface/TkPrimaryVertex.h"
+#include "DataFormats/L1TParticleFlow/interface/PFTrack.h"
+#include "DataFormats/L1TParticleFlow/interface/PFJet.h"
+
+#include "DataFormats/Math/interface/Point3D.h"
+/// point in the space
+typedef math::XYZPoint Point;
 //#include "SimTracker/Records/interface/TrackAssociatorRecord.h"
 //#include "SimDataFormats/TrackingAnalysis/interface/TrackingParticle.h"
 
@@ -201,6 +208,9 @@ public:
   typedef reco::TemplatedSecondaryVertexTagInfo<IPTI,VTX> SVTagInfo;
 
 
+  double dz(const l1t::PFTrack &ltrack, const Point &myBeamSpot);
+  double dxy(const l1t::PFTrack &ltrack, const Point &myBeamSpot);
+
 private:
   virtual void beginJob() ;
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
@@ -263,6 +273,13 @@ private:
   edm::EDGetTokenT<HLTBTagValue> PuppiJetBProbTag_;
 
   edm::EDGetTokenT<reco::VertexCollection> primaryVertexColl_;
+
+  bool runL1Variables_;
+  edm::EDGetTokenT<l1t::TkPrimaryVertexCollection> L1_VertexColl_;
+  edm::EDGetTokenT<l1t::PFTrackCollection> L1_BarrelTrackColl_;
+  edm::EDGetTokenT<l1t::PFTrackCollection> L1_HGCalTrackColl_;
+  edm::EDGetTokenT<l1t::PFJetCollection> L1_PFJetsColl_;
+  edm::EDGetTokenT<l1t::PFJetCollection> L1_PuppiJetsColl_;
 
   TFile*  rootFile_;
   double minJetPt_;
@@ -341,6 +358,13 @@ BTagHLTAnalyzerT<IPTI,VTX>::BTagHLTAnalyzerT(const edm::ParameterSet& iConfig):
 
   // Modules
   primaryVertexColl_   = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("HLTprimaryVertexColl"));
+
+  runL1Variables_ = iConfig.getParameter<bool>("analyzeL1Objects");
+  L1_VertexColl_   = consumes<l1t::TkPrimaryVertexCollection>(iConfig.getParameter<edm::InputTag>("L1VertexColl"));
+  L1_BarrelTrackColl_   = consumes<l1t::PFTrackCollection>(iConfig.getParameter<edm::InputTag>("L1BarrelTrackColl"));
+  L1_HGCalTrackColl_   = consumes<l1t::PFTrackCollection>(iConfig.getParameter<edm::InputTag>("L1HGcalTrackColl"));
+  L1_PFJetsColl_   = consumes<l1t::PFJetCollection>(iConfig.getParameter<edm::InputTag>("L1PFJets"));
+  L1_PuppiJetsColl_   = consumes<l1t::PFJetCollection>(iConfig.getParameter<edm::InputTag>("L1PuppiJets"));
 
 //
 //  branchNamePrefix_ = iConfig.getParameter<std::string>("BranchNamePrefix");
@@ -462,6 +486,72 @@ void BTagHLTAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Ev
     EventInfo.PV_isfake[EventInfo.nPV] = (*primaryVertex)[i].isFake();
 
     ++EventInfo.nPV;
+  }
+
+  //----------------------------------------
+  // L1 objects
+  //----------------------------------------
+  if(runL1Variables_){
+    edm::Handle<l1t::TkPrimaryVertexCollection> l1_vertices;
+    iEvent.getByToken(L1_VertexColl_,l1_vertices);
+    edm::Handle<l1t::PFTrackCollection> l1_barrelTracks;
+    iEvent.getByToken(L1_BarrelTrackColl_,l1_barrelTracks);
+    edm::Handle<l1t::PFTrackCollection> l1_hgcalTracks;
+    iEvent.getByToken(L1_HGCalTrackColl_,l1_hgcalTracks);
+    edm::Handle<l1t::PFJetCollection> l1_pfJets;
+    iEvent.getByToken(L1_PFJetsColl_,l1_pfJets);
+    edm::Handle<l1t::PFJetCollection> l1_puppiJets;
+    iEvent.getByToken(L1_PuppiJetsColl_,l1_puppiJets);
+
+    EventInfo.nL1_Vertices=0;
+    for (unsigned int i = 0; i< l1_vertices->size() ; ++i) {
+      EventInfo.L1_Vertex_z[EventInfo.nL1_Vertices]      = (*l1_vertices)[i].zvertex();
+      EventInfo.L1_Vertex_sum[EventInfo.nL1_Vertices]      = (*l1_vertices)[i].sum();
+      ++EventInfo.nL1_Vertices;
+    }
+
+    EventInfo.nL1_BarrelTracks=0;
+    for (unsigned int i = 0; i< l1_barrelTracks->size() ; ++i) {
+      EventInfo.L1_BarrelTrack_pt[EventInfo.nL1_BarrelTracks]      = (*l1_barrelTracks)[i].pt();
+      EventInfo.L1_BarrelTrack_eta[EventInfo.nL1_BarrelTracks]      = (*l1_barrelTracks)[i].eta();
+      EventInfo.L1_BarrelTrack_phi[EventInfo.nL1_BarrelTracks]      = (*l1_barrelTracks)[i].phi();
+      EventInfo.L1_BarrelTrack_m[EventInfo.nL1_BarrelTracks]      = (*l1_barrelTracks)[i].mass();
+      EventInfo.L1_BarrelTrack_dz[EventInfo.nL1_BarrelTracks]      = dz((*l1_barrelTracks)[i], pv->position());
+      EventInfo.L1_BarrelTrack_dxy[EventInfo.nL1_BarrelTracks]      = dxy((*l1_barrelTracks)[i], pv->position());
+      ++EventInfo.nL1_BarrelTracks;
+    }
+
+    EventInfo.nL1_HGCalTracks=0;
+    for (unsigned int i = 0; i< l1_hgcalTracks->size() ; ++i) {
+      EventInfo.L1_HGCalTrack_pt[EventInfo.nL1_HGCalTracks]      = (*l1_hgcalTracks)[i].pt();
+      EventInfo.L1_HGCalTrack_eta[EventInfo.nL1_HGCalTracks]      = (*l1_hgcalTracks)[i].eta();
+      EventInfo.L1_HGCalTrack_phi[EventInfo.nL1_HGCalTracks]      = (*l1_hgcalTracks)[i].phi();
+      EventInfo.L1_HGCalTrack_m[EventInfo.nL1_HGCalTracks]      = (*l1_hgcalTracks)[i].mass();
+      EventInfo.L1_HGCalTrack_dz[EventInfo.nL1_HGCalTracks]      = dz((*l1_hgcalTracks)[i], pv->position());
+      EventInfo.L1_HGCalTrack_dxy[EventInfo.nL1_HGCalTracks]      = dxy((*l1_hgcalTracks)[i], pv->position());
+      ++EventInfo.nL1_HGCalTracks;
+    }
+
+    EventInfo.nL1_PFJets=0;
+    for (unsigned int i = 0; i< l1_pfJets->size() ; ++i) {
+      EventInfo.L1_PFJets_pt[EventInfo.nL1_PFJets]      = (*l1_pfJets)[i].pt();
+      EventInfo.L1_PFJets_eta[EventInfo.nL1_PFJets]      = (*l1_pfJets)[i].eta();
+      EventInfo.L1_PFJets_phi[EventInfo.nL1_PFJets]      = (*l1_pfJets)[i].phi();
+      EventInfo.L1_PFJets_m[EventInfo.nL1_PFJets]      = (*l1_pfJets)[i].mass();
+      // EventInfo.L1_PFJet_dz[EventInfo.nL1_PFJets]      = dz((*l1_pfJets)[i], pv->position());
+      // EventInfo.L1_PFJet_dxy[EventInfo.nL1_PFJets]      = dxy((*l1_pfJets)[i], pv->position());
+      ++EventInfo.nL1_PFJets;
+    }
+    EventInfo.nL1_PuppiJets=0;
+    for (unsigned int i = 0; i< l1_puppiJets->size() ; ++i) {
+      EventInfo.L1_PuppiJets_pt[EventInfo.nL1_PuppiJets]      = (*l1_puppiJets)[i].pt();
+      EventInfo.L1_PuppiJets_eta[EventInfo.nL1_PuppiJets]      = (*l1_puppiJets)[i].eta();
+      EventInfo.L1_PuppiJets_phi[EventInfo.nL1_PuppiJets]      = (*l1_puppiJets)[i].phi();
+      EventInfo.L1_PuppiJets_m[EventInfo.nL1_PuppiJets]      = (*l1_puppiJets)[i].mass();
+      // EventInfo.L1_PuppiJet_dz[EventInfo.nL1_PuppiJets]      = dz((*l1_puppiJets)[i], pv->position());
+      // EventInfo.L1_PuppiJet_dxy[EventInfo.nL1_PuppiJets]      = dxy((*l1_puppiJets)[i], pv->position());
+      ++EventInfo.nL1_PuppiJets;
+    }
   }
 
 
@@ -1401,6 +1491,32 @@ void BTagHLTAnalyzerT<IPTI,VTX>::setTracksSV(const TrackRefCalo & trackRef, cons
     }
   }
 }
+
+
+
+// -------------- BEGIN Functions for L1 objects ----------------
+// copied from https://cmssdt.cern.ch/lxr/source/DataFormats/TrackReco/interface/TrackBase.h#0672
+// dz parameter with respect to a user-given beamSpot
+// (WARNING: this quantity can only be interpreted as the track z0, if the beamSpot is reasonably close to the refPoint, since linear approximations are involved).
+// This is a good approximation for Tracker tracks.
+// template<typename IPTI,typename VTX>
+template<>
+// double BTagHLTAnalyzerT<IPTI,VTX>::dz(const l1t::PFTrack &ltrack, const Point &myBeamSpot){
+double BTagHLTAnalyzerT<reco::CandIPTagInfo,reco::VertexCompositePtrCandidate>::dz(const l1t::PFTrack &ltrack, const Point &myBeamSpot){
+  return (ltrack.vz() - myBeamSpot.z()) -
+         ((ltrack.vx() - myBeamSpot.x()) * ltrack.px() + (ltrack.vy() - myBeamSpot.y()) * ltrack.py()) / ltrack.pt() * ltrack.pz() / ltrack.pt();
+}
+// dxy parameter with respect to a user-given beamSpot
+// (WARNING: this quantity can only be interpreted as a minimum transverse distance if beamSpot, if the beam spot is reasonably close to the refPoint, since linear approximations are involved).
+// This is a good approximation for Tracker tracks.
+// template<typename IPTI,typename VTX>
+template<>
+// double BTagHLTAnalyzerT<IPTI,VTX>::dxy(const l1t::PFTrack &ltrack, const Point &myBeamSpot){
+double BTagHLTAnalyzerT<reco::CandIPTagInfo,reco::VertexCompositePtrCandidate>::dxy(const l1t::PFTrack &ltrack, const Point &myBeamSpot){
+  return (-(ltrack.vx() - myBeamSpot.x()) * ltrack.py() + (ltrack.vy() - myBeamSpot.y()) * ltrack.px()) / ltrack.pt();
+}
+// -------------- END Functions for L1 objects ----------------
+
 
 
 // define specific instances of the templated BTagHLTAnalyzer

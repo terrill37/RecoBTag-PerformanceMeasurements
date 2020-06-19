@@ -15,6 +15,9 @@ const UInt_t nMaxGenV0 = 100;
 const UInt_t nMaxGenPruned = 100;
 const UInt_t nMaxPatMuon = 1000;
 const UInt_t nMaxPatElec = 1000;
+const UInt_t nMaxL1Vertices_ = 10000;
+const UInt_t nMaxL1Tracks_ = 10000;
+const UInt_t nMaxL1Jets_ = 10000;
 
 class EventInfoBranches {
 
@@ -188,7 +191,7 @@ class EventInfoBranches {
     int  PatElec_isTightElec[nMaxPatElec];
     float PatElec_sumChargedHadronPt[nMaxPatElec];
     float PatElec_sumNeutralHadronEt[nMaxPatElec];
-    float PatElec_sumPhotonEt[nMaxPatElec]; 
+    float PatElec_sumPhotonEt[nMaxPatElec];
     float PatElec_sumPUPt[nMaxPatElec];
 
     //float PatMuon_iso[nMaxPatMuon];
@@ -198,7 +201,37 @@ class EventInfoBranches {
     //float PatMuon_IP2D[nMaxPatMuon];
     //float PatMuon_IP2Dsig[nMaxPatMuon];
 
-
+    int nL1_Vertices;
+    float L1_Vertex_z[nMaxL1Vertices_];
+    float L1_Vertex_sum[nMaxL1Vertices_];
+    int nL1_BarrelTracks;
+    float L1_BarrelTrack_pt[nMaxL1Tracks_];
+    float L1_BarrelTrack_eta[nMaxL1Tracks_];
+    float L1_BarrelTrack_phi[nMaxL1Tracks_];
+    float L1_BarrelTrack_m[nMaxL1Tracks_];
+    float L1_BarrelTrack_dxy[nMaxL1Tracks_];
+    float L1_BarrelTrack_dz[nMaxL1Tracks_];
+    int nL1_HGCalTracks;
+    float L1_HGCalTrack_pt[nMaxL1Tracks_];
+    float L1_HGCalTrack_eta[nMaxL1Tracks_];
+    float L1_HGCalTrack_phi[nMaxL1Tracks_];
+    float L1_HGCalTrack_m[nMaxL1Tracks_];
+    float L1_HGCalTrack_dxy[nMaxL1Tracks_];
+    float L1_HGCalTrack_dz[nMaxL1Tracks_];
+    int nL1_PFJets;
+    float L1_PFJets_pt[nMaxL1Jets_];
+    float L1_PFJets_eta[nMaxL1Jets_];
+    float L1_PFJets_phi[nMaxL1Jets_];
+    float L1_PFJets_m[nMaxL1Jets_];
+    float L1_PFJets_dxy[nMaxL1Jets_];
+    float L1_PFJets_dz[nMaxL1Jets_];
+    int nL1_PuppiJets;
+    float L1_PuppiJets_pt[nMaxL1Jets_];
+    float L1_PuppiJets_eta[nMaxL1Jets_];
+    float L1_PuppiJets_phi[nMaxL1Jets_];
+    float L1_PuppiJets_m[nMaxL1Jets_];
+    float L1_PuppiJets_dxy[nMaxL1Jets_];
+    float L1_PuppiJets_dz[nMaxL1Jets_];
 
     int   ttbar_chan, ttbar_trigWord, ttbar_metfilterWord, ttbar_allmepartons, ttbar_matchmepartons;
     int   ttbar_ng,ttbar_gid[25];
@@ -403,7 +436,39 @@ class EventInfoBranches {
        if(variableParser.isToBeStored("PatElec_sumPhotonEt"       )) tree->Branch("PatElec_sumPhotonEt"       ,	PatElec_sumPhotonEt        ,  "PatElec_sumPhotonEt[nPatElec]/F"       );
        if(variableParser.isToBeStored("PatElec_sumPUPt"           )) tree->Branch("PatElec_sumPUPt"           ,	PatElec_sumPUPt            ,  "PatElec_sumPUPt[nPatElec]/F"           );
 
+       if(variableParser.isToBeStored("nL1_BarrelTracks")) tree->Branch(("nL1_BarrelTracks")           ,&nL1_BarrelTracks          ,("nL1_BarrelTracks/I"));
+       if(variableParser.isToBeStored("L1_BarrelTrack_pt")) tree->Branch(("L1_BarrelTrack_pt")           ,&L1_BarrelTrack_pt          ,("L1_BarrelTrack_pt[nL1_BarrelTracks]/F"));
+       if(variableParser.isToBeStored("L1_BarrelTrack_eta")) tree->Branch(("L1_BarrelTrack_eta")           ,&L1_BarrelTrack_eta          ,("L1_BarrelTrack_eta[nL1_BarrelTracks]/F"));
+       if(variableParser.isToBeStored("L1_BarrelTrack_phi")) tree->Branch(("L1_BarrelTrack_phi")           ,&L1_BarrelTrack_phi          ,("L1_BarrelTrack_phi[nL1_BarrelTracks]/F"));
+       if(variableParser.isToBeStored("L1_BarrelTrack_m")) tree->Branch(("L1_BarrelTrack_m")           ,&L1_BarrelTrack_m          ,("L1_BarrelTrack_m[nL1_BarrelTracks]/F"));
+       if(variableParser.isToBeStored("L1_BarrelTrack_dz")) tree->Branch(("L1_BarrelTrack_dz")           ,&L1_BarrelTrack_dz          ,("L1_BarrelTrack_dz[nL1_BarrelTracks]/F"));
+       if(variableParser.isToBeStored("L1_BarrelTrack_dxy")) tree->Branch(("L1_BarrelTrack_dxy")           ,&L1_BarrelTrack_dxy          ,("L1_BarrelTrack_dxy[nL1_BarrelTracks]/F"));
+       if(variableParser.isToBeStored("nL1_HGCalTracks")) tree->Branch(("nL1_HGCalTracks")           ,&nL1_HGCalTracks          ,("nL1_HGCalTracks/I"));
+       if(variableParser.isToBeStored("L1_HGCalTrack_pt")) tree->Branch(("L1_HGCalTrack_pt")           ,&L1_HGCalTrack_pt          ,("L1_HGCalTrack_pt[nL1_HGCalTracks]/F"));
+       if(variableParser.isToBeStored("L1_HGCalTrack_eta")) tree->Branch(("L1_HGCalTrack_eta")           ,&L1_HGCalTrack_eta          ,("L1_HGCalTrack_eta[nL1_HGCalTracks]/F"));
+       if(variableParser.isToBeStored("L1_HGCalTrack_phi")) tree->Branch(("L1_HGCalTrack_phi")           ,&L1_HGCalTrack_phi          ,("L1_HGCalTrack_phi[nL1_HGCalTracks]/F"));
+       if(variableParser.isToBeStored("L1_HGCalTrack_m")) tree->Branch(("L1_HGCalTrack_m")           ,&L1_HGCalTrack_m          ,("L1_HGCalTrack_m[nL1_HGCalTracks]/F"));
+       if(variableParser.isToBeStored("L1_HGCalTrack_dz")) tree->Branch(("L1_HGCalTrack_dz")           ,&L1_HGCalTrack_dz          ,("L1_HGCalTrack_dz[nL1_HGCalTracks]/F"));
+       if(variableParser.isToBeStored("L1_HGCalTrack_dxy")) tree->Branch(("L1_HGCalTrack_dxy")           ,&L1_HGCalTrack_dxy          ,("L1_HGCalTrack_dxy[nL1_HGCalTracks]/F"));
 
+       if(variableParser.isToBeStored("nL1_Vertices")) tree->Branch(("nL1_Vertices")           ,&nL1_Vertices          ,("nL1_Vertices/I"));
+       if(variableParser.isToBeStored("L1_Vertex_z")) tree->Branch(("L1_Vertex_z")           ,&L1_Vertex_z          ,("L1_Vertex_z[nL1_Vertices]/F"));
+       if(variableParser.isToBeStored("L1_Vertex_sum")) tree->Branch(("L1_Vertex_sum")           ,&L1_Vertex_sum          ,("L1_Vertex_sum[nL1_Vertices]/F"));
+
+       if(variableParser.isToBeStored("nL1_PFJets")) tree->Branch(("nL1_PFJets")           ,&nL1_PFJets          ,("nL1_PFJets/I"));
+       if(variableParser.isToBeStored("L1_PFJets_pt")) tree->Branch(("L1_PFJets_pt")           ,&L1_PFJets_pt          ,("L1_PFJets_pt[nL1_PFJets]/F"));
+       if(variableParser.isToBeStored("L1_PFJets_eta")) tree->Branch(("L1_PFJets_eta")           ,&L1_PFJets_eta          ,("L1_PFJets_eta[nL1_PFJets]/F"));
+       if(variableParser.isToBeStored("L1_PFJets_phi")) tree->Branch(("L1_PFJets_phi")           ,&L1_PFJets_phi          ,("L1_PFJets_phi[nL1_PFJets]/F"));
+       if(variableParser.isToBeStored("L1_PFJets_m")) tree->Branch(("L1_PFJets_m")           ,&L1_PFJets_m          ,("L1_PFJets_m[nL1_PFJets]/F"));
+       if(variableParser.isToBeStored("L1_PFJets_dxy")) tree->Branch(("L1_PFJets_dxy")           ,&L1_PFJets_dxy          ,("L1_PFJets_dxy[nL1_PFJets]/F"));
+       if(variableParser.isToBeStored("L1_PFJets_dz")) tree->Branch(("L1_PFJets_dz")           ,&L1_PFJets_dz          ,("L1_PFJets_dz[nL1_PFJets]/F"));
+       if(variableParser.isToBeStored("nL1_PuppiJets")) tree->Branch(("nL1_PuppiJets")           ,&nL1_PuppiJets          ,("nL1_PuppiJets/I"));
+       if(variableParser.isToBeStored("L1_PuppiJets_pt")) tree->Branch(("L1_PuppiJets_pt")           ,&L1_PuppiJets_pt          ,("L1_PuppiJets_pt[nL1_PuppiJets]/F"));
+       if(variableParser.isToBeStored("L1_PuppiJets_eta")) tree->Branch(("L1_PuppiJets_eta")           ,&L1_PuppiJets_eta          ,("L1_PuppiJets_eta[nL1_PuppiJets]/F"));
+       if(variableParser.isToBeStored("L1_PuppiJets_phi")) tree->Branch(("L1_PuppiJets_phi")           ,&L1_PuppiJets_phi          ,("L1_PuppiJets_phi[nL1_PuppiJets]/F"));
+       if(variableParser.isToBeStored("L1_PuppiJets_m")) tree->Branch(("L1_PuppiJets_m")           ,&L1_PuppiJets_m          ,("L1_PuppiJets_m[nL1_PuppiJets]/F"));
+       if(variableParser.isToBeStored("L1_PuppiJets_dxy")) tree->Branch(("L1_PuppiJets_dxy")           ,&L1_PuppiJets_dxy          ,("L1_PuppiJets_dxy[nL1_PuppiJets]/F"));
+       if(variableParser.isToBeStored("L1_PuppiJets_dz")) tree->Branch(("L1_PuppiJets_dz")           ,&L1_PuppiJets_dz          ,("L1_PuppiJets_dz[nL1_PuppiJets]/F"));
     }
 
     void ReadBranches(TTree *tree, VariableParser variableParser){
