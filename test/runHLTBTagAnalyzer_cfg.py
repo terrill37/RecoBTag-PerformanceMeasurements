@@ -23080,11 +23080,15 @@ process.selectedEvents = eventCounter.clone()
 #process = customize_HLT_trkIter2GlobalPtSeed0p9ForBTag(process)
 
 from RecoBTag.PerformanceMeasurements.customise import customize_HLT_trkIter2GlobalPtSeedXX
-process = customize_HLT_trkIter2GlobalPtSeedXX(process,options.trackPtSeed)
+process = customize_HLT_trkIter2GlobalPtSeedXX(process,0.4)
  
 # update the b-tagging configuration
 from RecoBTag.PerformanceMeasurements.customise import customize_HLT_trkIter2GlobalPtSeedXXForBTag
-process = customize_HLT_trkIter2GlobalPtSeedXXForBTag(process,options.trackPtSeed)
+process = customize_HLT_trkIter2GlobalPtSeedXXForBTag(process,0.4)
+
+# update the b-tagging ptCut
+from RecoBTag.PerformanceMeasurements.customise import customize_HLTDeepCSVPF
+process = customize_HLTDeepCSVPF(process,options.trackPtSeed)
 
 
 ## Define analyzer sequence
