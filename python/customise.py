@@ -230,8 +230,16 @@ def customize_CaloJet(process,ptVal=0.9): #FIXME
                         svTagInfos=cms.InputTag("hltInclusiveSecondaryVertexFinderTagInfos")
           )
         )
+    
+  process.hltDeepCombinedSecondaryVertexBJetTagsCalo.src = "hltDeepCombinedSecondaryVertexBJetTagsInfosCalo"+ptStr 
 
-   return process
+  process.HLTBtagDeepCSVSequenceL3.replace(
+    process.hltDeepCombinedSecondaryVertexBJetTagsInfosCalo,
+    getattr(process,"hltDeepCombinedSecondaryVertexBJetTagsInfosCalo"+ptStr)
+ )
+   
+
+  return process
 
 
 
