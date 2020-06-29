@@ -23090,6 +23090,8 @@ process = customize_HLT_trkIter2GlobalPtSeedXXForBTag(process,0.4)
 from RecoBTag.PerformanceMeasurements.customise import customize_HLTDeepCSVPF
 process = customize_HLTDeepCSVPF(process,options.trackPtSeed)
 
+from RecoBTag.Performance.customise import customize_CaloJet 
+process = customize_CaloJet(process, options.trackPtSeed)
 
 ## Define analyzer sequence
 process.analyzerSeq = cms.Sequence( )
