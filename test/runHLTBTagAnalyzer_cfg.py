@@ -8689,7 +8689,7 @@ process.hltDeepSecondaryVertexTagInfosPF = cms.EDProducer("CandSecondaryVertexPr
     extSVCollection = cms.InputTag("hltDeepInclusiveMergedVerticesPF"),
     extSVDeltaRToJet = cms.double(0.3),
     minimumTrackWeight = cms.double(0.5),
-    trackIPTagInfos = cms.InputTag("hltDeepBLifetimeTagInfosPF"),
+    trackIPTagInfos = cms.InputTag("hltDeepBLifetimeTagInfosPF"), #FIXME
     trackSelection = cms.PSet(
         a_dR = cms.double(-0.001053),
         a_pT = cms.double(0.005263),
@@ -23090,7 +23090,7 @@ process = customize_HLT_trkIter2GlobalPtSeedXXForBTag(process,0.4)
 from RecoBTag.PerformanceMeasurements.customise import customize_HLTDeepCSVPF
 process = customize_HLTDeepCSVPF(process,options.trackPtSeed)
 
-from RecoBTag.Performance.customise import customize_CaloJet 
+from RecoBTag.PerformanceMeasurements.customise import customize_CaloJet 
 process = customize_CaloJet(process, options.trackPtSeed)
 
 ## Define analyzer sequence
