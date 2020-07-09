@@ -23048,9 +23048,8 @@ process.out = cms.OutputModule("PoolOutputModule",
 #-------------------------------------
 from RecoBTag.PerformanceMeasurements.BTagHLTAnalyzer_cff import *
 bta = bTagAnalyzer_func(trigPaths=options.trigNames)
-process.btagana = bta.clone() #FIXME HERE
+process.btagana = bta.clone()
 
-print("attempt to change HELLO")
 
 #------------------
 #Handle groups

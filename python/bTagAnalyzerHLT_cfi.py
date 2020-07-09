@@ -20,9 +20,6 @@ def bTagAnalyzer_func(trigPaths=[]):
                                      PFJetCSVTags         = cms.InputTag('hltCombinedSecondaryVertexBJetTagsPF'),
                                      PFJetDeepCSVTags     = cms.InputTag('hltDeepCombinedSecondaryVertexBJetTagsPF:probb'),
                                      HLTTriggerPathNames  = cms.vstring(trigPaths),
-                                     #"HLT_ZeroBias_Beamspot_v*"),
-                                                                       # "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_*",
-                                                                       # "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_*"), #edit here FIXME
     )
     print(trigPaths)
 
