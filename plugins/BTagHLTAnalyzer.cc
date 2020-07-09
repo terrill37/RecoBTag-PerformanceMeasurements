@@ -460,9 +460,15 @@ void BTagHLTAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Ev
   if ( !foundNames ) edm::LogError("TriggerNamesNotFound") << "Could not get trigger names!";
   if ( trigRes->size() != triggerList.size() ) edm::LogError("TriggerPathLengthMismatch") << "Length of names and paths not the same: "
 											  << triggerList.size() << "," << trigRes->size() ;
-
-  bool passTrig = processTrig(trigRes, triggerList);
-  if(!passTrig) return;
+  
+  //FIXME check if passes trigger
+  //cout << "c++ passTrig" << endl;
+  //bool passTrig = processTrig(trigRes, triggerList);
+  if(!passTrig){
+    //cout << "Error, failed TRIG"<<endl;
+    
+    return;
+    }
 
   //------------------------------------------------------
   // Jet info

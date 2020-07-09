@@ -170,7 +170,7 @@ def customize_CaloJet(process,ptVal=0.9): #FIXME
           )
   )
     
-  process.hltInclusiveSecondaryVertexFinderTagInfos.trackIPTagInfos = "hltImpactParameterTagInfos" + ptStr 
+  process.hltInclusiveSecondaryVertexFinderTagInfos.trackIPTagInfos = "hltImpactParameterTagInfosPtCut" + ptStr 
 
   process.HLTBtagDeepCSVSequenceL3.replace(
     process.hltImpactParameterTagInfos,
@@ -214,7 +214,7 @@ def customize_CaloJet(process,ptVal=0.9): #FIXME
           )
   )
 
-  process.hltInclusiveSecondaryVertices.secondaryVertices = "hltInclusiveVertexFinder" + ptStr
+  process.hltInclusiveSecondaryVertices.secondaryVertices = "hltInclusiveVertexFinderPtCut" + ptStr
 
   process.HLTBtagDeepCSVSequenceL3.replace(
     process.hltInclusiveVertexFinder,
@@ -225,4 +225,25 @@ def customize_CaloJet(process,ptVal=0.9): #FIXME
   return process
 
 
-
+#def bTagHLTAnalyzer_custom():
+#
+#bTagHLTAnalyzer = cms.EDAnalyzer("BTagHLTAnalyzer",
+#                                  bTagAnalyzerCommon,
+#                                  variableSet,
+#                                  groupSet,
+#                                  HLTprimaryVertexColl = cms.InputTag('hltVerticesPFFilter'),
+#                                  CaloJets             = cms.InputTag('hltAK4CaloJetsCorrectedIDPassed'),
+#                                  CaloJetTags          = cms.InputTag('hltDeepCombinedSecondaryVertexBJetTagsInfosCalo'),
+#                                  CaloSVs              = cms.InputTag('hltInclusiveSecondaryVertexFinderTagInfos'),
+#                                  CaloJetCSVTags       = cms.InputTag('hltCombinedSecondaryVertexBJetTagsCalo'),
+#                                  CaloJetDeepCSVTags   = cms.InputTag('hltDeepCombinedSecondaryVertexBJetTagsCalo:probb'),
+#                                  PFJets               = cms.InputTag('hltAK4PFJetsLooseIDCorrected'),
+#                                  PFJetTags            = cms.InputTag('hltDeepCombinedSecondaryVertexBJetTagsInfos'),
+#                                  PFSVs                = cms.InputTag('hltDeepSecondaryVertexTagInfosPF'),
+#                                  PFJetCSVTags         = cms.InputTag('hltCombinedSecondaryVertexBJetTagsPF'), 
+#                                  PFJetDeepCSVTags     = cms.InputTag('hltDeepCombinedSecondaryVertexBJetTagsPF:probb'),
+#                                  HLTTriggerPathNames  = cms.vstring("HLT_ZeroBias_Beamspot_v*"),
+#                                                                    # "HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_Is
+#                                                                    # "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_*"), #edit here FIXME              
+#)
+#                                                                                                    
